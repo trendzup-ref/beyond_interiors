@@ -9,74 +9,88 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Tag,
-  Compass,
-  Wrench,
-  Clock,
+  ChevronDown,
+  LogOut,
   Sparkles,
   HelpCircle,
   Truck,
+  Wrench,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCart, useWishlist } from "../../context/CartWishlistContext.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 
+// STRICT 10 Product Categories for Beyond Interiors
 export const STORE_CATEGORIES = [
   {
     id: "furniture",
-    name: "Sofas & Armchairs",
+    name: "Furniture",
     categoryParam: "furniture",
     image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=100&q=80",
-  },
-  {
-    id: "storage",
-    name: "Storage & Organisation",
-    categoryParam: "storage",
-    image:
-      "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=100&q=80",
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=100&q=80",
   },
   {
     id: "lighting",
-    name: "Designer Lighting",
+    name: "Lighting",
     categoryParam: "lighting",
     image:
       "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=100&q=80",
   },
   {
-    id: "wall-finishes",
-    name: "Wallpapers & Paneling",
-    categoryParam: "wall-finishes",
+    id: "wallpapers",
+    name: "Wallpapers",
+    categoryParam: "wallpapers",
     image:
       "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=100&q=80",
   },
   {
-    id: "curtains",
-    name: "Curtains & Drapes",
-    categoryParam: "window-dressings",
+    id: "wall-panels",
+    name: "Wall Panels",
+    categoryParam: "wall-panels",
     image:
       "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=100&q=80",
   },
   {
     id: "flooring",
-    name: "Wooden & Vinyl Flooring",
+    name: "Flooring",
     categoryParam: "flooring",
     image:
       "https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=100&q=80",
   },
   {
-    id: "decor",
-    name: "Home Décor & Accents",
-    categoryParam: "decor",
+    id: "curtains-blinds",
+    name: "Curtains & Blinds",
+    categoryParam: "curtains-blinds",
+    image:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=100&q=80",
+  },
+  {
+    id: "home-decor",
+    name: "Home Décor",
+    categoryParam: "home-decor",
     image:
       "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=100&q=80",
   },
   {
-    id: "installation",
-    name: "Turnkey Installation",
-    link: "/services",
+    id: "rugs-carpets",
+    name: "Rugs & Carpets",
+    categoryParam: "rugs-carpets",
     image:
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=100&q=80",
+      "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=100&q=80",
+  },
+  {
+    id: "modular-kitchen",
+    name: "Modular Kitchen",
+    categoryParam: "modular-kitchen",
+    image:
+      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=100&q=80",
+  },
+  {
+    id: "bathroom-products",
+    name: "Bathroom Products",
+    categoryParam: "bathroom-products",
+    image:
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=100&q=80",
   },
 ];
 
@@ -84,15 +98,33 @@ const IkeaNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
   const activeCategory = searchParams.get("category") || "";
+
+  // Close account menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
+        setAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Strict check: Never show customer/public navbar to Admin users
+  if (isAuthenticated && user?.role === "admin") {
+    return null;
+  }
 
   // Handle Search Submission
   const handleSearchSubmit = (e) => {
@@ -110,6 +142,12 @@ const IkeaNavbar = () => {
       const scrollAmount = direction === "left" ? -260 : 260;
       scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
+  };
+
+  const handleLogout = async () => {
+    setAccountMenuOpen(false);
+    await logout();
+    navigate("/login");
   };
 
   return (
@@ -132,47 +170,43 @@ const IkeaNavbar = () => {
               alt="Beyond Interiors"
               className="h-8 sm:h-9 md:h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-102"
               onError={(e) => {
-                // Graceful text badge fallback if image asset is unavailable
                 e.target.style.display = "none";
               }}
             />
           </Link>
         </div>
 
-        {/* Public Storefront Navigation Links (IKEA Style) */}
+        {/* Public Storefront Navigation Links (Strict Requirements) */}
         <nav className="hidden xl:flex items-center gap-6 text-xs sm:text-[13px] font-semibold text-stone-700 shrink-0">
           <Link
             to="/products"
-            className={`hover:text-stone-950 transition-colors py-1 ${location.pathname === "/products" && !activeCategory ? "text-stone-950 font-bold" : ""
-              }`}
+            className={`hover:text-stone-950 transition-colors py-1 ${
+              location.pathname === "/products" && !activeCategory ? "text-stone-950 font-bold" : ""
+            }`}
           >
             Products
           </Link>
-          <Link
-            to="/products?room=all"
+          <a
+            href="/#about"
             className="hover:text-stone-950 transition-colors py-1"
           >
-            Rooms
-          </Link>
+            About
+          </a>
           <Link
-            to="/products?filter=offers"
-            className="hover:text-stone-950 transition-colors py-1 flex items-center gap-1 text-amber-700 font-bold"
+            to="/support"
+            className={`hover:text-stone-950 transition-colors py-1 ${
+              location.pathname === "/support" ? "text-stone-950 font-bold" : ""
+            }`}
           >
-            <span>Offers</span>
+            Support
           </Link>
           <Link
             to="/services"
-            className={`hover:text-stone-950 transition-colors py-1 ${location.pathname === "/services" ? "text-stone-950 font-bold" : ""
-              }`}
+            className={`hover:text-stone-950 transition-colors py-1 ${
+              location.pathname === "/services" ? "text-stone-950 font-bold" : ""
+            }`}
           >
-            Installation & Services
-          </Link>
-          <Link
-            to="/support"
-            className={`hover:text-stone-950 transition-colors py-1 ${location.pathname === "/support" ? "text-stone-950 font-bold" : ""
-              }`}
-          >
-            Design / Support
+            Installation
           </Link>
         </nav>
 
@@ -197,7 +231,7 @@ const IkeaNavbar = () => {
                   setSearchQuery("");
                   navigate("/products");
                 }}
-                className="absolute right-3 p-1 text-stone-400 hover:text-stone-700"
+                className="absolute right-3 p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -205,22 +239,89 @@ const IkeaNavbar = () => {
           </div>
         </form>
 
-        {/* Right Action Icons (Exact Match to IKEA: User/Hej! + Wishlist + Cart) */}
+        {/* Right Action Icons: Authentication Display + Wishlist + Cart */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {/* Notifications Dropdown Bell */}
           <NotificationBell />
 
-          {/* User Account / Hej! Log In (Exact IKEA Format) */}
-          <Link
-            to={isAuthenticated ? "/account" : "/login"}
-            className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-full hover:bg-stone-100 text-stone-700 transition-colors text-xs font-semibold"
-            title={isAuthenticated ? "My Account" : "Log In"}
-          >
-            <User className="w-5 h-5 text-stone-800" />
-            <span className="hidden md:inline-block leading-tight text-stone-800">
-              {isAuthenticated ? `Hej, ${user?.name?.split(" ")[0]}!` : "Hej! Log in"}
-            </span>
-          </Link>
+          {/* Authentication Display: Logged in customer vs. Logged out */}
+          {isAuthenticated && user ? (
+            <div className="relative" ref={accountMenuRef}>
+              <button
+                onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+                className="flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-full hover:bg-stone-100 text-stone-800 transition-colors text-xs font-semibold cursor-pointer border border-transparent hover:border-stone-200"
+                title="Account Options"
+              >
+                <div className="w-6 h-6 rounded-full bg-[#D4C26B] text-[#1C1211] font-bold text-xs flex items-center justify-center">
+                  {user?.name?.charAt(0) || "C"}
+                </div>
+                <span className="hidden md:inline-block leading-tight text-stone-900 font-medium">
+                  Hey, {user?.name?.split(" ")[0]}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-stone-500" />
+              </button>
+
+              {/* Customer Account Dropdown Menu */}
+              {accountMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-stone-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-4 py-2 border-b border-stone-100">
+                    <p className="text-xs font-bold text-stone-900 truncate">{user.name}</p>
+                    <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
+                  </div>
+                  <Link
+                    to="/account"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-medium transition-colors"
+                  >
+                    <User className="w-3.5 h-3.5 text-stone-500" />
+                    <span>My Profile & Account</span>
+                  </Link>
+                  <Link
+                    to="/track"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-medium transition-colors"
+                  >
+                    <Truck className="w-3.5 h-3.5 text-stone-500" />
+                    <span>Track Orders & Services</span>
+                  </Link>
+                  <Link
+                    to="/services"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-medium transition-colors"
+                  >
+                    <Wrench className="w-3.5 h-3.5 text-stone-500" />
+                    <span>Book Installation</span>
+                  </Link>
+                  <Link
+                    to="/support"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-950 font-medium transition-colors"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 text-stone-500" />
+                    <span>Customer Support</span>
+                  </Link>
+                  <div className="border-t border-stone-100 mt-1 pt-1">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 font-medium transition-colors cursor-pointer text-left"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-stone-900 hover:bg-[#A73D4D] text-white text-xs font-semibold shadow-xs transition-all duration-200"
+              title="Sign in to your account"
+            >
+              <User className="w-4 h-4" />
+              <span>Login</span>
+            </Link>
+          )}
 
           {/* Wishlist Icon with Counter Badge */}
           <Link
@@ -254,61 +355,56 @@ const IkeaNavbar = () => {
         </div>
       </div>
 
-      {/* ================= SECOND ROW: HORIZONTAL CATEGORY RIBBON (Exact Match to IKEA) ================= */}
+      {/* ================= SECOND ROW: HORIZONTAL CATEGORY RIBBON (10 Exact Categories) ================= */}
       <div className="relative border-t border-stone-100 bg-white">
         <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-2 relative flex items-center">
           {/* Left Arrow Scroll Button */}
           <button
             onClick={() => scrollRibbon("left")}
-            className="hidden md:flex absolute left-2 z-10 w-7 h-7 rounded-full bg-white/95 border border-stone-200 shadow-xs items-center justify-center text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors cursor-pointer"
-            aria-label="Scroll left"
+            className="hidden md:flex absolute left-2 z-10 w-7 h-7 rounded-full bg-white/95 border border-stone-200 shadow-md items-center justify-center text-stone-700 hover:bg-stone-50 hover:text-stone-950 transition-all cursor-pointer"
+            aria-label="Scroll categories left"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          {/* Category Ribbon Scroll Container */}
+          {/* Horizontal Scrollable Ribbon (All 10 Categories) */}
           <div
             ref={scrollContainerRef}
-            className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none scroll-smooth w-full py-0.5"
+            className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth w-full px-2 py-0.5"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {/* First Pill: Offers */}
+            {/* All Products Pill */}
             <Link
-              to="/products?filter=offers"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold whitespace-nowrap transition-colors shrink-0 shadow-2xs"
+              to="/products"
+              className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                location.pathname === "/products" && !activeCategory
+                  ? "bg-stone-900 text-white shadow-xs"
+                  : "bg-stone-100 hover:bg-stone-200 text-stone-800"
+              }`}
             >
-              <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-amber-700">
-                <Tag className="w-3.5 h-3.5" />
-              </div>
-              <span>Offers</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>All Categories</span>
             </Link>
 
-            {/* Curated Beyond Interiors Category Pills */}
+            {/* 10 Exact Categories with Mini Preview Avatars */}
             {STORE_CATEGORIES.map((cat) => {
-              const isSelected =
-                activeCategory &&
-                cat.categoryParam &&
-                activeCategory.toLowerCase() === cat.categoryParam.toLowerCase();
-
-              const targetUrl = cat.link || `/products?category=${cat.categoryParam}`;
-
+              const isSelected = activeCategory.toLowerCase() === cat.categoryParam.toLowerCase();
               return (
                 <Link
                   key={cat.id}
-                  to={targetUrl}
-                  className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${isSelected
+                  to={`/products?category=${cat.categoryParam}`}
+                  className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all group ${
+                    isSelected
                       ? "bg-stone-900 text-white shadow-xs"
-                      : "bg-stone-100 hover:bg-stone-200 text-stone-800"
-                    }`}
+                      : "bg-[#F5F5F5] hover:bg-[#EAEAEA] text-stone-800"
+                  }`}
                 >
-                  <div className="w-5 h-5 rounded-md overflow-hidden bg-white shrink-0 flex items-center justify-center border border-stone-200/60">
-                    <img
-                      src={cat.image}
-                      alt={cat.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span>{cat.name}</span>
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-5 h-5 rounded-full object-cover shrink-0 border border-stone-200/60"
+                  />
+                  <span className="whitespace-nowrap">{cat.name}</span>
                 </Link>
               );
             })}
@@ -317,38 +413,45 @@ const IkeaNavbar = () => {
           {/* Right Arrow Scroll Button */}
           <button
             onClick={() => scrollRibbon("right")}
-            className="hidden md:flex absolute right-2 z-10 w-7 h-7 rounded-full bg-white/95 border border-stone-200 shadow-xs items-center justify-center text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors cursor-pointer"
-            aria-label="Scroll right"
+            className="hidden md:flex absolute right-2 z-10 w-7 h-7 rounded-full bg-white/95 border border-stone-200 shadow-md items-center justify-center text-stone-700 hover:bg-stone-50 hover:text-stone-950 transition-all cursor-pointer"
+            aria-label="Scroll categories right"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* ================= MOBILE EXPANDED MENU ================= */}
+      {/* ================= MOBILE COLLAPSIBLE MENU DRAWER ================= */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-stone-200 p-5 space-y-4 shadow-xl animate-in fade-in">
-          <div className="space-y-1 font-semibold text-sm text-stone-800">
+        <div className="lg:hidden border-t border-stone-200 bg-white px-4 py-4 space-y-3 shadow-lg">
+          <div className="space-y-1 text-sm font-semibold text-stone-800">
             <Link
               to="/products"
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 border-b border-stone-100"
             >
-              All Products & Furniture
+              Products Catalog
             </Link>
-            <Link
-              to="/products?filter=offers"
+            <a
+              href="/#about"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 border-b border-stone-100 text-amber-700"
+              className="block py-2 border-b border-stone-100"
             >
-              Special Offers & Featured
+              About
+            </a>
+            <Link
+              to="/support"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 border-b border-stone-100"
+            >
+              Support
             </Link>
             <Link
               to="/services"
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 border-b border-stone-100"
             >
-              Turnkey Installation Services
+              Installation
             </Link>
             <Link
               to="/track"
@@ -356,13 +459,6 @@ const IkeaNavbar = () => {
               className="block py-2 border-b border-stone-100"
             >
               Live Order & Installation Tracking
-            </Link>
-            <Link
-              to="/support"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 border-b border-stone-100"
-            >
-              Concierge Help & Support
             </Link>
             <Link
               to="/wishlist"
@@ -378,13 +474,33 @@ const IkeaNavbar = () => {
             >
               Shopping Bag ({cartCount})
             </Link>
-            <Link
-              to={isAuthenticated ? "/account" : "/login"}
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-[#A73D4D]"
-            >
-              {isAuthenticated ? "My Profile & Account" : "Sign In to Account"}
-            </Link>
+            <div className="pt-2">
+              {isAuthenticated ? (
+                <div className="space-y-2">
+                  <Link
+                    to="/account"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-2 text-[#A73D4D]"
+                  >
+                    Hey, {user?.name} (My Profile)
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left py-2 text-rose-600 font-medium cursor-pointer"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-stone-900 font-bold"
+                >
+                  Login to Account
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}

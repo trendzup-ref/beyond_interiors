@@ -337,11 +337,71 @@ export const CATEGORIES = [
   "Wallpapers",
   "Wall Panels",
   "Flooring",
-  "Curtains and Blinds",
-  "Home Decor",
+  "Curtains & Blinds",
+  "Home Décor",
+  "Rugs & Carpets",
+  "Modular Kitchen",
+  "Bathroom Products",
 ];
+
+export const CATEGORY_SUBCATEGORY_MAP = {
+  "Furniture": [
+    "Sofas & Sectional",
+    "Beds",
+    "Dining Table & Chairs",
+    "Wardrobes & Storage",
+    "Chairs & Accent Seating",
+  ],
+  "Lighting": [
+    "Pendant Lights",
+    "Chandeliers",
+    "Wall Lights",
+    "Floor Lamps",
+    "Table Lamps",
+  ],
+  "Wallpapers": [
+    "Textured Wallpapers",
+    "Floral & Botanical Wallpapers",
+    "Geometric Wallpapers",
+    "Mural Wallpapers",
+    "Abstract & Contemporary Wallpapers",
+  ],
+  "Wall Panels": [
+    "Fluted Wall Panels",
+    "3D Decorative Panels",
+    "Marble & Stone Panels",
+  ],
+  "Flooring": [
+    "Wooden Flooring",
+    "SPC Flooring",
+  ],
+  "Curtains & Blinds": [
+    "Sheer Curtains",
+    "Blackout Curtains",
+  ],
+  "Home Décor": [
+    "Vases & Planters",
+    "Decorative Mirrors",
+  ],
+  "Rugs & Carpets": [
+    "Wool Rugs",
+    "Jute Rugs",
+    "Shaggy Rugs",
+  ],
+  "Modular Kitchen": [
+    "Kitchen Islands",
+    "Cabinets",
+    "Pantry & Tall Units",
+  ],
+  "Bathroom Products": [
+    "Wash Basins",
+    "Faucets & Mixers",
+    "Bathtubs",
+  ],
+};
 
 export default {
   CURATED_CATALOG_PRODUCTS,
   CATEGORIES,
+  CATEGORY_SUBCATEGORY_MAP,
 };

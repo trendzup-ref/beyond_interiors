@@ -50,7 +50,7 @@ export const HOW_IT_WORKS_STEPS = [
 
 const HowItWorksSection = ({ steps = HOW_IT_WORKS_STEPS }) => {
   return (
-    <section className="w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+    <section id="about" className="w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 scroll-mt-24">
       {/* ================= SECTION HEADER (Reference Exact Match) ================= */}
       <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-16 space-y-2.5">
         <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-tight">

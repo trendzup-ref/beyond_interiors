@@ -92,33 +92,33 @@ function App() {
                 </Route>
               </Route>
 
-          {/* Admin Protected Portal (Allowed role: 'admin' only) */}
-          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/categories" element={<CategoryList />} />
-              <Route path="/admin/products" element={<ProductList />} />
-              <Route path="/admin/products/new" element={<ProductForm />} />
-              <Route path="/admin/products/edit/:id" element={<ProductForm />} />
-              <Route path="/admin/inventory" element={<InventoryList />} />
-              <Route path="/admin/customers" element={<CustomerList />} />
-              <Route path="/admin/customers/:id" element={<CustomerDetail />} />
-              <Route path="/admin/orders" element={<OrderList />} />
-              <Route path="/admin/orders/:id" element={<OrderDetail />} />
-              <Route path="/admin/payments" element={<OrderList />} />
-              <Route path="/admin/installations" element={<InstallationList />} />
-              <Route path="/admin/professionals" element={<ProfessionalList />} />
-              <Route path="/admin/site-visits" element={<SiteVisitList />} />
-              <Route path="/admin/banners" element={<BannerList />} />
-              <Route path="/admin/featured" element={<FeaturedProducts />} />
-            </Route>
-          </Route>
+              {/* Admin Protected Portal (Allowed role: 'admin' only) */}
+              <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route path="/admin/dashboard" element={<Dashboard />} />
+                  <Route path="/admin/categories" element={<CategoryList />} />
+                  <Route path="/admin/products" element={<ProductList />} />
+                  <Route path="/admin/products/new" element={<ProductForm />} />
+                  <Route path="/admin/products/edit/:id" element={<ProductForm />} />
+                  <Route path="/admin/inventory" element={<InventoryList />} />
+                  <Route path="/admin/customers" element={<CustomerList />} />
+                  <Route path="/admin/customers/:id" element={<CustomerDetail />} />
+                  <Route path="/admin/orders" element={<OrderList />} />
+                  <Route path="/admin/orders/:id" element={<OrderDetail />} />
+                  <Route path="/admin/payments" element={<OrderList />} />
+                  <Route path="/admin/installations" element={<InstallationList />} />
+                  <Route path="/admin/professionals" element={<ProfessionalList />} />
+                  <Route path="/admin/site-visits" element={<SiteVisitList />} />
+                  <Route path="/admin/banners" element={<BannerList />} />
+                  <Route path="/admin/featured" element={<FeaturedProducts />} />
+                </Route>
+              </Route>
 
-          {/* Fallback to Customer Homepage */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        </CartWishlistProvider>
+              {/* Fallback to Customer Homepage */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </CartWishlistProvider>
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>

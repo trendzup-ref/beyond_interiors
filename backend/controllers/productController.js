@@ -138,6 +138,7 @@ export const getAllProducts = async (req, res, next) => {
       status,
       lowStock,
       isFeatured,
+      priceFilter,
       page = 1,
       limit = 30,
       sortBy = "createdAt",
@@ -162,7 +163,8 @@ export const getAllProducts = async (req, res, next) => {
         const foundCat = await Category.findOne({
           $or: [
             { slug: category.toLowerCase().trim() },
-            { name: { $regex: category.trim(), $options: "i" } },
+            { name: { $regex: `^${category.trim()}$`, $options: "i" } },
+            { name: { $regex: category.trim().replace(/-/g, " "), $options: "i" } },
           ],
         });
         if (foundCat) {
@@ -171,7 +173,29 @@ export const getAllProducts = async (req, res, next) => {
       }
     }
 
-    if (subcategory) filter.subcategory = subcategory;
+    if (subcategory && subcategory !== "All" && subcategory !== "all") {
+      // Check if valid ObjectId or subcategory slug/name
+      if (subcategory.match(/^[0-9a-fA-F]{24}$/)) {
+        filter.subcategory = subcategory;
+      } else {
+        const foundSub = await Subcategory.findOne({
+          $or: [
+            { slug: subcategory.toLowerCase().trim() },
+            { name: { $regex: `^${subcategory.trim()}$`, $options: "i" } },
+            { name: { $regex: subcategory.trim().replace(/-/g, " "), $options: "i" } },
+          ],
+        });
+        if (foundSub) {
+          filter.subcategory = foundSub._id;
+        }
+      }
+    }
+
+    if (priceFilter && priceFilter !== "all") {
+      if (priceFilter === "under-35k") filter.basePrice = { $lt: 35000 };
+      else if (priceFilter === "35k-50k") filter.basePrice = { $gte: 35000, $lte: 50000 };
+      else if (priceFilter === "above-50k") filter.basePrice = { $gt: 50000 };
+    }
 
     if (status === "active") filter.isActive = true;
     if (status === "inactive") filter.isActive = false;
@@ -191,7 +215,22 @@ export const getAllProducts = async (req, res, next) => {
     const pageNum = Math.max(1, Number(page) || 1);
     const limitNum = Math.max(1, Number(limit) || 30);
     const skip = (pageNum - 1) * limitNum;
-    const sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+
+    // Semantic sorting
+    let sort = {};
+    if (sortBy === "price-asc") {
+      sort = { basePrice: 1 };
+    } else if (sortBy === "price-desc") {
+      sort = { basePrice: -1 };
+    } else if (sortBy === "name-asc") {
+      sort = { name: 1 };
+    } else if (sortBy === "name-desc") {
+      sort = { name: -1 };
+    } else if (sortBy === "featured") {
+      sort = { isFeatured: -1, createdAt: -1 };
+    } else {
+      sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+    }
 
     const [products, totalCount] = await Promise.all([
       Product.find(filter)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useSearchParams } from "react-router";
 import {
   Search,
@@ -15,181 +15,192 @@ import {
   Sparkles,
   ShoppingBag,
   Loader2,
+  Filter,
 } from "lucide-react";
 import { getPublicProducts } from "../../api/productApi.js";
 import { useCart, useWishlist } from "../../context/CartWishlistContext.jsx";
-import { CURATED_CATALOG_PRODUCTS, CATEGORIES } from "../../data/productsData.js";
+import {
+  CURATED_CATALOG_PRODUCTS,
+  CATEGORIES,
+  CATEGORY_SUBCATEGORY_MAP,
+} from "../../data/productsData.js";
 
 export const SAMPLE_PRODUCTS = CURATED_CATALOG_PRODUCTS;
 
 const ProductListing = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlCategory = searchParams.get("category");
+  const urlSubcategory = searchParams.get("subcategory");
   const urlSearch = searchParams.get("search") || "";
   const urlOffers = searchParams.get("filter") === "offers";
 
-  const [products, setProducts] = useState(CURATED_CATALOG_PRODUCTS);
-  const [loading, setLoading] = useState(false);
+  // Data & Pagination State (Server-side MongoDB .skip() & .limit(30))
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+
+  // Filter & Search Controls
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
   const [priceFilter, setPriceFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [visibleCount, setVisibleCount] = useState(30);
 
-  const { isInWishlist, toggleWishlist, wishlistCount } = useWishlist();
-  const { addToCart, cartCount } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
-  // Sync category param from URL
+  // Sync category param from URL on initial load or URL change
   useEffect(() => {
     if (urlCategory) {
       const match = CATEGORIES.find(
         (c) =>
-          c.toLowerCase().replace(/\s+/g, "-") === urlCategory.toLowerCase() ||
+          c.toLowerCase().replace(/&/g, "").replace(/\s+/g, "-").replace(/--+/g, "-") ===
+            urlCategory.toLowerCase() ||
           c.toLowerCase() === urlCategory.toLowerCase()
       );
       setSelectedCategory(match || "All");
     } else {
       setSelectedCategory("All");
     }
-    setVisibleCount(30);
   }, [urlCategory]);
+
+  // Sync subcategory param from URL
+  useEffect(() => {
+    if (urlSubcategory) {
+      setSelectedSubcategory(urlSubcategory);
+    } else {
+      setSelectedSubcategory("All");
+    }
+  }, [urlSubcategory]);
 
   // Sync search param from URL
   useEffect(() => {
     if (urlSearch !== searchTerm) {
       setSearchTerm(urlSearch);
-      setVisibleCount(30);
     }
   }, [urlSearch]);
 
-  // Fetch from backend
-  useEffect(() => {
-    const fetchApiProducts = async () => {
-      try {
-        setLoading(true);
-        const res = await getPublicProducts({
-          page: 1,
-          limit: 30,
-          search: searchTerm || undefined,
-          category: selectedCategory !== "All" ? selectedCategory : undefined,
-        });
+  // Compute visible subcategories based on selected category:
+  // - Selecting one category displays ONLY its corresponding subcategories
+  // - Selecting "All" displays subcategories of all 10 categories
+  const visibleSubcategories = useMemo(() => {
+    if (selectedCategory === "All") {
+      // Flatten subcategories of all 10 categories
+      return Object.values(CATEGORY_SUBCATEGORY_MAP).flat();
+    }
+    return CATEGORY_SUBCATEGORY_MAP[selectedCategory] || [];
+  }, [selectedCategory]);
 
-        if (res.data?.data?.products && res.data.data.products.length > 0) {
-          setProducts(res.data.data.products);
+  // Core Server-Side Data Fetcher using MongoDB .skip() and .limit(30)
+  const fetchProducts = useCallback(
+    async (pageToFetch = 1, append = false) => {
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+
+      try {
+        const params = {
+          page: pageToFetch,
+          limit: 30,
+          search: searchTerm.trim() || undefined,
+          category: selectedCategory !== "All" ? selectedCategory : undefined,
+          subcategory: selectedSubcategory !== "All" ? selectedSubcategory : undefined,
+          sortBy,
+          priceFilter: priceFilter !== "all" ? priceFilter : undefined,
+          isFeatured: urlOffers ? true : undefined,
+        };
+
+        const res = await getPublicProducts(params);
+        const fetchedProducts = res?.data?.products || [];
+        const pagination = res?.data?.pagination || {};
+
+        if (append) {
+          setProducts((prev) => {
+            // Prevent duplicate products by _id
+            const existingIds = new Set(prev.map((p) => p._id));
+            const freshItems = fetchedProducts.filter((p) => !existingIds.has(p._id));
+            return [...prev, ...freshItems];
+          });
         } else {
-          setProducts(CURATED_CATALOG_PRODUCTS);
+          setProducts(fetchedProducts);
         }
+
+        setCurrentPage(pageToFetch);
+        setHasMore(pagination.hasMore ?? false);
+        setTotalCount(pagination.total ?? fetchedProducts.length);
       } catch (err) {
-        setProducts(CURATED_CATALOG_PRODUCTS);
+        console.error("Failed to load products from server:", err);
+        if (!append) {
+          // Graceful fallback to curated architectural catalog if server is offline
+          setProducts(CURATED_CATALOG_PRODUCTS.slice(0, 30));
+          setTotalCount(CURATED_CATALOG_PRODUCTS.length);
+          setHasMore(CURATED_CATALOG_PRODUCTS.length > 30);
+        }
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
-    };
-    fetchApiProducts();
-  }, [selectedCategory, searchTerm]);
+    },
+    [selectedCategory, selectedSubcategory, searchTerm, sortBy, priceFilter, urlOffers]
+  );
 
-  // Filter & Sorting Logic
-  const filteredProducts = useMemo(() => {
-    return products
-      .filter((p) => {
-        // Search Term
-        if (searchTerm.trim()) {
-          const q = searchTerm.toLowerCase();
-          const matchName = p.name.toLowerCase().includes(q);
-          const matchDesc = p.description?.toLowerCase().includes(q);
-          const matchSku = p.variants?.some((v) => v.sku?.toLowerCase().includes(q));
-          if (!matchName && !matchDesc && !matchSku) return false;
-        }
+  // Trigger server-side fetch on filter change (resets to page 1)
+  useEffect(() => {
+    fetchProducts(1, false);
+  }, [fetchProducts]);
 
-        // Offers Filter
-        if (urlOffers && !p.isFeatured) {
-          return false;
-        }
-
-        // Category Filter
-        if (selectedCategory !== "All") {
-          const pCatName = p.category?.name || p.category || "";
-          if (pCatName.toLowerCase() !== selectedCategory.toLowerCase()) {
-            return false;
-          }
-        }
-
-        // Price Filter
-        const price = p.basePrice || (p.variants && p.variants[0]?.price) || 0;
-        if (priceFilter === "under-35k" && price >= 35000) return false;
-        if (priceFilter === "35k-50k" && (price < 35000 || price > 50000)) return false;
-        if (priceFilter === "above-50k" && price <= 50000) return false;
-
-        return true;
-      })
-      .sort((a, b) => {
-        const priceA = a.basePrice || a.variants?.[0]?.price || 0;
-        const priceB = b.basePrice || b.variants?.[0]?.price || 0;
-
-        if (sortBy === "price-asc") return priceA - priceB;
-        if (sortBy === "price-desc") return priceB - priceA;
-        if (sortBy === "name-asc") return a.name.localeCompare(b.name);
-        if (sortBy === "featured") return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
-        return 0;
-      });
-  }, [products, searchTerm, selectedCategory, sortBy, priceFilter, urlOffers]);
-
-  // 30 Products displayed initially, loads next 30 with existing 30
-  const visibleProducts = useMemo(() => {
-    return filteredProducts.slice(0, visibleCount);
-  }, [filteredProducts, visibleCount]);
-
-  // Load More Products Handler
-  const handleLoadMore = async () => {
-    setLoadingMore(true);
-    const nextPage = currentPage + 1;
-
-    try {
-      const res = await getPublicProducts({
-        page: nextPage,
-        limit: 30,
-        search: searchTerm || undefined,
-        category: selectedCategory !== "All" ? selectedCategory : undefined,
-      });
-
-      if (res.data?.data?.products && res.data.data.products.length > 0) {
-        setProducts((prev) => [...prev, ...res.data.data.products]);
-        setCurrentPage(nextPage);
-      }
-    } catch {
-      // Fallback
-    } finally {
-      // Always increment visibleCount by 30 to reveal next slice
-      setVisibleCount((prev) => prev + 30);
-      setLoadingMore(false);
-    }
+  // Handle Load More (fetches page + 1 from MongoDB and appends)
+  const handleLoadMore = () => {
+    if (loadingMore || !hasMore) return;
+    fetchProducts(currentPage + 1, true);
   };
 
+  // Category selection handler (resets subcategory if current subcategory is not in the new category)
   const handleCategorySelect = (cat) => {
     setSelectedCategory(cat);
-    setVisibleCount(30);
-    setCurrentPage(1);
+    setSelectedSubcategory("All");
+
+    const newParams = new URLSearchParams(searchParams);
     if (cat === "All") {
-      searchParams.delete("category");
+      newParams.delete("category");
     } else {
-      searchParams.set("category", cat.toLowerCase().replace(/\s+/g, "-"));
+      newParams.set(
+        "category",
+        cat.toLowerCase().replace(/&/g, "").replace(/\s+/g, "-").replace(/--+/g, "-")
+      );
     }
-    setSearchParams(searchParams);
+    newParams.delete("subcategory");
+    setSearchParams(newParams);
+  };
+
+  // Subcategory selection handler
+  const handleSubcategorySelect = (sub) => {
+    setSelectedSubcategory(sub);
+    const newParams = new URLSearchParams(searchParams);
+    if (sub === "All") {
+      newParams.delete("subcategory");
+    } else {
+      newParams.set("subcategory", sub);
+    }
+    setSearchParams(newParams);
   };
 
   return (
     <div className="bg-white font-sans text-stone-900 flex flex-col flex-1">
       {/* ================= HEADER & SEARCH / FILTER / SORT BAR ================= */}
       <header className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-4">
-        {/* Title & Count */}
+        {/* Title & Product Count */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200/80 pb-6">
           <div>
             <div className="inline-flex items-center gap-2 mb-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-600" />
               <span className="text-[11px] font-mono font-semibold tracking-widest uppercase text-stone-500">
-                CURATED LIVING COLLECTION
+                CURATED ARCHITECTURAL COLLECTION
               </span>
             </div>
             <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-stone-900">
@@ -197,12 +208,17 @@ const ProductListing = () => {
                 ? "Architectural Furnishings & Products"
                 : `${selectedCategory} Collection`}
             </h1>
+            {selectedSubcategory !== "All" && (
+              <p className="text-xs font-mono text-amber-800 font-semibold mt-1">
+                Subcategory: {selectedSubcategory}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono text-stone-500">
             <span>SHOWING</span>
             <span className="font-bold text-stone-900 bg-stone-100 px-2.5 py-1 rounded">
-              {visibleProducts.length} OF {filteredProducts.length} PRODUCTS
+              {products.length} OF {totalCount} PRODUCTS
             </span>
           </div>
         </div>
@@ -222,7 +238,7 @@ const ProductListing = () => {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -264,8 +280,8 @@ const ProductListing = () => {
           </div>
         </div>
 
-        {/* Category Pills Strip */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none border-b border-stone-100">
+        {/* ================= 10 STRICT CATEGORIES STRIP ================= */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 no-scrollbar scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
             return (
@@ -283,11 +299,53 @@ const ProductListing = () => {
             );
           })}
         </div>
+
+        {/* ================= CORRESPONDING SUBCATEGORIES STRIP ================= */}
+        {/* Horizontal overflow scrolling with hidden scrollbar */}
+        <div className="pt-2 pb-3 border-t border-stone-100 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="shrink-0 flex items-center gap-1 text-[11px] font-mono uppercase text-stone-400 font-semibold pr-1">
+            <Filter className="w-3 h-3" />
+            <span>Subcategory:</span>
+          </div>
+
+          <button
+            onClick={() => handleSubcategorySelect("All")}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+              selectedSubcategory === "All"
+                ? "bg-[#D4C26B] text-[#1C1211] font-bold shadow-2xs"
+                : "bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200"
+            }`}
+          >
+            All Subcategories
+          </button>
+
+          {visibleSubcategories.map((sub) => {
+            const isSubSelected = selectedSubcategory.toLowerCase() === sub.toLowerCase();
+            return (
+              <button
+                key={sub}
+                onClick={() => handleSubcategorySelect(sub)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  isSubSelected
+                    ? "bg-[#D4C26B] text-[#1C1211] font-bold shadow-2xs"
+                    : "bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200"
+                }`}
+              >
+                {sub}
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       {/* ================= PRODUCT GRID CONTAINER ================= */}
       <main className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1">
-        {filteredProducts.length === 0 ? (
+        {loading && products.length === 0 ? (
+          <div className="py-24 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-amber-700" />
+            <p className="text-xs font-mono text-stone-500">Querying architectural products...</p>
+          </div>
+        ) : products.length === 0 ? (
           <div className="py-24 text-center space-y-4 max-w-md mx-auto">
             <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
               <Search className="w-8 h-8" />
@@ -296,95 +354,109 @@ const ProductListing = () => {
               No matching products found
             </h3>
             <p className="text-xs text-stone-500 leading-relaxed">
-              We couldn't find any architectural pieces matching your current filters. Try resetting your search terms.
+              We couldn't find any architectural pieces matching your current category and subcategory selection. Try selecting "All" or resetting filters.
             </p>
             <button
               onClick={() => {
-                setSearchTerm("");
                 setSelectedCategory("All");
+                setSelectedSubcategory("All");
+                setSearchTerm("");
                 setPriceFilter("all");
               }}
-              className="px-5 py-2.5 rounded-full bg-stone-900 text-white text-xs font-semibold"
+              className="px-5 py-2.5 rounded-full bg-stone-900 text-white text-xs font-semibold hover:bg-[#A73D4D] transition-colors cursor-pointer"
             >
-              Reset Filters
+              Reset All Filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-            {visibleProducts.map((product) => {
-              const displayPrice =
-                product.basePrice || (product.variants && product.variants[0]?.price) || 0;
-              const primaryImage =
-                (product.images && product.images[0]) ||
-                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80";
-              const isWishlisted = isInWishlist(product._id);
-              const primaryVariant = product.variants?.[0];
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+            {products.map((product) => {
+              const inWishlist = isInWishlist(product._id);
+              const primaryVariant = product.variants?.[0] || {};
+              const displayPrice = product.basePrice || primaryVariant.price || 0;
+              const displayMrp = primaryVariant.mrp || Math.round(displayPrice * 1.25);
+              const productImage =
+                product.images?.[0] ||
+                "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80";
 
               return (
-                <div key={product._id} className="group flex flex-col">
-                  {/* CARD IMAGE CONTAINER */}
-                  <div className="relative aspect-square rounded-2xl sm:rounded-[26px] bg-[#F7F7F7] border border-stone-200/60 overflow-hidden flex items-center justify-center p-6 sm:p-10 transition-all duration-300 group-hover:bg-[#F2EFE9] group-hover:shadow-md">
-                    {/* Top-Right Minimalist Wishlist Button */}
+                <div
+                  key={product._id}
+                  className="group flex flex-col bg-white rounded-3xl p-3 sm:p-4 border border-stone-200/70 hover:border-stone-400 transition-all duration-300 hover:shadow-lg"
+                >
+                  {/* Top Image Showcase with Wishlist & Quick Add */}
+                  <div className="relative aspect-square w-full rounded-2xl bg-[#F5F5F3] overflow-hidden flex items-center justify-center p-6 sm:p-8">
+                    <img
+                      src={productImage}
+                      alt={product.name}
+                      className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-108"
+                      loading="lazy"
+                    />
+
+                    {/* Subtle Category/Subcategory Pill Tag */}
+                    <div className="absolute top-3.5 left-3.5">
+                      <span className="text-[10px] font-mono tracking-wider uppercase font-semibold text-stone-700 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-full shadow-2xs border border-stone-200/60">
+                        {product.subcategory?.name || product.category?.name || "ARCHITECTURAL"}
+                      </span>
+                    </div>
+
+                    {/* Wishlist Button */}
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        toggleWishlist(product);
-                      }}
-                      aria-label="Save to wishlist"
-                      className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-xs text-stone-600 hover:text-rose-600 transition-transform duration-200 hover:scale-110 active:scale-90 cursor-pointer"
+                      onClick={() => toggleWishlist(product)}
+                      className={`absolute top-3.5 right-3.5 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs ${
+                        inWishlist
+                          ? "bg-rose-50 text-rose-600 scale-105"
+                          : "bg-white/90 text-stone-600 hover:text-rose-600 hover:bg-white"
+                      }`}
+                      title={inWishlist ? "Remove from wishlist" : "Save to wishlist"}
                     >
                       <Heart
-                        className={`w-4 h-4 transition-colors ${
-                          isWishlisted ? "fill-rose-600 text-rose-600" : ""
-                        }`}
+                        className={`w-4 h-4 ${inWishlist ? "fill-current text-rose-600" : ""}`}
                       />
                     </button>
 
-                    {/* Centered Product Image */}
-                    <Link
-                      to={`/products/${product._id}`}
-                      className="w-full h-full flex items-center justify-center cursor-pointer"
-                    >
-                      <img
-                        src={primaryImage}
-                        alt={product.name}
-                        className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-106"
-                        loading="lazy"
-                      />
-                    </Link>
-
-                    {/* Bottom-Right Floating Action '+' Button (Directly Adds to Shopping Bag) */}
+                    {/* Circular Quick Add to Cart Button (IKEA Match) */}
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        addToCart(product, primaryVariant, 1);
-                      }}
-                      aria-label={`Add ${product.name} to bag`}
-                      className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-stone-900 hover:bg-[#A73D4D] text-white flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 active:scale-95 group/btn cursor-pointer"
+                      onClick={() => addToCart(product)}
+                      className="absolute bottom-3.5 right-3.5 w-10 h-10 rounded-full bg-stone-900 text-white flex items-center justify-center shadow-md hover:bg-[#A73D4D] transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer"
+                      title="Add to Shopping Bag"
+                      aria-label="Add to cart"
                     >
-                      <Plus className="w-5 h-5 transition-transform duration-200 group-hover/btn:rotate-90" />
+                      <Plus className="w-5 h-5 stroke-[2.5]" />
                     </button>
                   </div>
 
-                  {/* DETAILS BELOW CARD */}
-                  <div className="pt-3.5 space-y-1">
-                    <Link
-                      to={`/products/${product._id}`}
-                      className="block font-serif text-base sm:text-lg font-bold text-stone-900 hover:text-[#A73D4D] transition-colors leading-tight line-clamp-1"
-                    >
-                      {product.name}
-                    </Link>
+                  {/* Product Details Block */}
+                  <div className="pt-4 pb-2 px-1 flex flex-col flex-1 justify-between space-y-2">
+                    <div>
+                      <Link
+                        to={`/products/${product._id}`}
+                        className="group-hover:text-[#A73D4D] transition-colors"
+                      >
+                        <h3 className="font-sans font-bold text-base sm:text-lg text-stone-900 tracking-tight line-clamp-1">
+                          {product.name}
+                        </h3>
+                      </Link>
+                      <p className="text-xs text-stone-500 font-sans line-clamp-2 mt-1 leading-relaxed">
+                        {product.description}
+                      </p>
+                    </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="font-sans font-bold text-sm sm:text-base text-stone-900">
-                        ₹{displayPrice.toLocaleString("en-IN")}
-                      </span>
+                    <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-sans font-bold text-base sm:text-lg text-stone-900">
+                          ₹{displayPrice.toLocaleString("en-IN")}
+                        </span>
+                        {displayMrp > displayPrice && (
+                          <span className="text-xs text-stone-400 line-through">
+                            ₹{displayMrp.toLocaleString("en-IN")}
+                          </span>
+                        )}
+                      </div>
 
-                      {primaryVariant?.material && (
-                        <span className="text-[11px] font-sans text-stone-400 font-light truncate max-w-[140px]">
-                          {primaryVariant.material}
+                      {primaryVariant?.sku && (
+                        <span className="text-[10px] font-mono text-stone-400 uppercase">
+                          {primaryVariant.sku}
                         </span>
                       )}
                     </div>
@@ -395,12 +467,12 @@ const ProductListing = () => {
           </div>
         )}
 
-        {/* ================= LOAD MORE PRODUCTS BUTTON (+30 WITH EXISTING 30) ================= */}
-        {filteredProducts.length > 0 && (
+        {/* ================= SERVER-SIDE PAGINATION: LOAD MORE PRODUCTS (30 + 30) ================= */}
+        {products.length > 0 && (
           <div className="mt-16 pt-8 border-t border-stone-200/80 flex flex-col items-center justify-center space-y-4">
             <p className="text-xs font-mono text-stone-500">
-              Showing <strong className="text-stone-900">{visibleProducts.length}</strong> of{" "}
-              <strong className="text-stone-900">{filteredProducts.length}</strong> Products
+              Showing <strong className="text-stone-900">{products.length}</strong> of{" "}
+              <strong className="text-stone-900">{totalCount}</strong> Products
             </p>
 
             {/* Visual Progress Bar */}
@@ -410,13 +482,13 @@ const ProductListing = () => {
                 style={{
                   width: `${Math.min(
                     100,
-                    Math.round((visibleProducts.length / filteredProducts.length) * 100)
+                    Math.round((products.length / Math.max(1, totalCount)) * 100)
                   )}%`,
                 }}
               />
             </div>
 
-            {visibleProducts.length < filteredProducts.length ? (
+            {hasMore ? (
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
@@ -425,13 +497,13 @@ const ProductListing = () => {
                 {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>
                   {loadingMore
-                    ? "Loading Next 30 Pieces..."
+                    ? "Fetching Next 30 Items from Database..."
                     : `Load More Products (+30)`}
                 </span>
               </button>
             ) : (
               <p className="text-xs text-stone-400 font-serif italic mt-2">
-                You've reached the end of the curated collection ({filteredProducts.length} of {filteredProducts.length} products).
+                All {totalCount} matching products loaded from catalog.
               </p>
             )}
           </div>

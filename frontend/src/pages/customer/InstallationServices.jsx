@@ -275,8 +275,8 @@ const InstallationServices = () => {
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${selectedCategory === cat
-                  ? "bg-stone-900 text-white shadow-xs"
-                  : "bg-white text-stone-600 hover:bg-stone-200 border border-stone-200"
+                ? "bg-stone-900 text-white shadow-xs"
+                : "bg-white text-stone-600 hover:bg-stone-200 border border-stone-200"
                 }`}
             >
               {cat}

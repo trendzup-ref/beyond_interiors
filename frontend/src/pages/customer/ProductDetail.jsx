@@ -37,8 +37,9 @@ const ProductDetail = () => {
       try {
         setLoading(true);
         const res = await getPublicProduct(id);
-        if (res.data?.data?.product) {
-          setProduct(res.data.data.product);
+        const fetchedProduct = res?.data?.product || res?.product || res?.data?.data?.product;
+        if (fetchedProduct) {
+          setProduct(fetchedProduct);
           return;
         }
       } catch (err) {

@@ -4,41 +4,38 @@ import { Link } from "react-router";
 
 /**
  * FAQ DATASET FOR BEYOND INTERIORS
- * Replace `DEFAULT_FAQ_IMAGE` with your admin-uploaded image in the future.
+ * Matches brand terminology and includes warranty & care specifications.
  */
-export const DEFAULT_FAQ_IMAGE =
-  "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1000&q=80";
-
 export const FAQ_ITEMS = [
   {
     id: 1,
+    question: "How does the warranty work?",
+    answer:
+      "The warranty is eligible for all types of manufacturing defects in the product. To know the warranty period and warranty terms, please refer to the warranty description on the product page on www.beyondinteriors.in\nRepair, Replacement or Cancellation of the product under the warranty period is subject to review on the basis of nature of the damage/defect.\nReplacement will be provided only in case the product is non repairable after review with our technical team.",
+  },
+  {
+    id: 2,
     question: "How should I care for Beyond Interiors furniture & fabrics?",
     answer:
       "All our upholstered collections and solid wood pieces are crafted with premium protective coatings. For everyday care, dust with a microfiber cloth and keep away from direct moisture. Detailed care guides and fabric-specific maintenance kits are included with every delivery.",
   },
   {
-    id: 2,
+    id: 3,
     question: "How do I book a site visit and professional installation?",
     answer:
-      "You can request an on-site consultation directly through our Services portal or during checkout. Our certified interior specialist visits your property with precision laser measurement tools and physical material swatches to assess wall structures and ensure flawless architectural fitment before dispatch.",
+      "You can request an on-site consultation directly through our Services portal or during checkout. Our certified interior specialist coordinates with precision laser measurement tools and physical material swatches to assess wall structures and ensure flawless architectural fitment before dispatch.",
   },
   {
-    id: 3,
+    id: 4,
     question: "Do you offer bulk, commercial, or studio orders?",
     answer:
       "Yes, absolutely. We work closely with architects, interior studios, hospitality brands, and corporate workspaces. We offer customized volume tiers, bespoke architectural sizing, commercial-grade fabric certifications, and turnkey project management for large-scale fitouts.",
   },
   {
-    id: 4,
+    id: 5,
     question: "What payment methods do you accept for orders?",
     answer:
       "To ensure maximum transparency on bespoke and high-value furnishings, BEYOND INTERIORS strictly operates on verified offline payments. You can pay with Cash on Delivery (COD), Direct Bank Transfer (NEFT/RTGS), or Cheque upon delivery and on-site physical inspection.",
-  },
-  {
-    id: 5,
-    question: "Are your materials and finishes eco-friendly & non-toxic?",
-    answer:
-      "Yes. We prioritize sustainable European hardwoods, OEKO-TEX certified Belgian linens, natural plant-based wood waxes, and low-VOC acoustic wall panel backing. Every material is selected to promote a healthy, toxin-free indoor atmosphere.",
   },
   {
     id: 6,
@@ -48,13 +45,9 @@ export const FAQ_ITEMS = [
   },
 ];
 
-const FaqSection = ({
-  faqImage = DEFAULT_FAQ_IMAGE,
-  faqs = FAQ_ITEMS,
-  className = "",
-}) => {
-  // Default to item 3 open (matching reference image where the 3rd question is expanded)
-  const [openId, setOpenId] = useState(3);
+const FaqSection = ({ faqs = FAQ_ITEMS, className = "" }) => {
+  // Default first item (warranty) open as in reference image
+  const [openId, setOpenId] = useState(1);
 
   const toggleFaq = (id) => {
     setOpenId((prev) => (prev === id ? null : id));
@@ -62,120 +55,77 @@ const FaqSection = ({
 
   return (
     <section className={`w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 ${className}`}>
-      {/* OUTER CARD CONTAINER WITH SOFT WARM AMBIENT BACKGROUND */}
-      <div className="relative w-full  overflow-hidden">
-        {/* ================= SECTION HEADER (Reference Exact Match) ================= */}
+      <div className="w-full">
+        {/* ================= SECTION HEADER ================= */}
         <div className="mb-10 sm:mb-14">
           <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-stone-900 leading-tight">
             <span>Questions you might </span>
-            <span className="text-[#F25A1A] uppercase font-bold tracking-wider">
+            <span className="text-[#C0623A] uppercase font-bold tracking-wider">
               ASK
             </span>
           </h2>
           <p className="font-sans text-xs sm:text-sm text-stone-500 mt-2 max-w-xl font-light">
             Everything you need to know about purchasing interior collections, scheduling site
-            visits, and our certified installation process.
+            visits, warranties, and our certified installation process.
           </p>
         </div>
 
-        {/* ================= TWO-COLUMN GRID: ARCH IMAGE (LEFT) + ACCORDION (RIGHT) ================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-          {/* LEFT COLUMN: ARCHITECTURAL ARCHED IMAGE + WATERMARK (Reference Exact Match) */}
-          <div className="lg:col-span-5 relative flex items-center justify-center">
-            {/* Watermark Lettering Behind the Arch (Reference Match "SOMA" style) */}
-            <div
-              className="absolute -top-6 -right-4 sm:-right-8 select-none pointer-events-none font-serif text-6xl sm:text-8xl md:text-9xl font-bold text-[#E8DFD3]/60 tracking-wider leading-none z-0"
-              aria-hidden="true"
-            >
-              BEYOND
-            </div>
+        {/* ================= FULL WIDTH FAQ LIST ACCORDION (Exact Reference Match) ================= */}
+        <div className="w-full space-y-4">
+          {faqs.map((faq) => {
+            const isOpen = openId === faq.id;
 
-            {/* DISTINCTIVE ARCHED IMAGE CONTAINER (Curved top-left arch like reference) */}
-            <div className="relative z-10 w-full max-w-[340px] sm:max-w-[380px] h-[380px] sm:h-[450px] md:h-[480px] rounded-tl-[140px] sm:rounded-tl-[160px] rounded-tr-2xl rounded-br-2xl rounded-bl-2xl overflow-hidden shadow-xl border-4 border-white/80">
-              <img
-                src={faqImage}
-                alt="Beyond Interiors Architectural Space with Linen Drapery"
-                className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-105"
-                loading="lazy"
-              />
-
-              {/* Ambient Warm Vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-
-              {/* Bottom Subtle Overlay Tag */}
-              <div className="absolute bottom-4 left-4 right-4 z-20 text-center">
-                <span className="inline-block text-[11px] font-mono tracking-widest uppercase text-white/95 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                  ARCHITECTURAL HARMONY
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: ACCORDION FAQ LIST (Reference Exact Match) */}
-          <div className="lg:col-span-7 space-y-3 sm:space-y-4">
-            {faqs.map((faq) => {
-              const isOpen = openId === faq.id;
-
-              return (
-                <div
-                  key={faq.id}
-                  className={`rounded-2xl transition-all duration-300 border ${isOpen
-                    ? "bg-[#F3EDE3] border-stone-300/80 shadow-xs"
-                    : "bg-transparent hover:bg-stone-100/60 border-transparent"
-                    }`}
-                >
-                  {/* QUESTION BUTTON */}
-                  <button
-                    onClick={() => toggleFaq(faq.id)}
-                    className="w-full text-left py-4 sm:py-5 px-4 sm:px-6 flex items-center justify-between gap-4 transition-colors"
-                    aria-expanded={isOpen}
-                  >
-                    <span
-                      className={`font-serif text-base sm:text-lg font-bold leading-snug transition-colors ${isOpen ? "text-stone-950" : "text-stone-800 hover:text-stone-950"
-                        }`}
-                    >
-                      {faq.question}
-                    </span>
-
-                    {/* PLUS / MINUS TOGGLE ICON (Reference Exact Match) */}
-                    <span
-                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isOpen
-                        ? "bg-stone-900 text-white"
-                        : "bg-stone-200/80 text-stone-700 hover:bg-stone-300"
-                        }`}
-                    >
-                      {isOpen ? (
-                        <Minus className="w-4 h-4" />
-                      ) : (
-                        <Plus className="w-4 h-4" />
-                      )}
-                    </span>
-                  </button>
-
-                  {/* ACCORDION ANSWER CONTENT */}
-                  {isOpen && (
-                    <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-1 animate-fadeIn">
-                      <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed font-light">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Need More Help Footer Link */}
-            <div className="pt-4 px-4 flex items-center justify-between text-xs text-stone-500">
-              <span className="font-light">Still have queries regarding installation or custom orders?</span>
-              <Link
-                to="/services"
-                className="inline-flex items-center gap-1 font-semibold text-[#A73D4D] hover:underline"
+            return (
+              <div
+                key={faq.id}
+                className="border-b border-stone-200/90 pb-4 transition-colors"
               >
-                <span>Contact Design Desk</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
+                {/* QUESTION ACCORDION ROW */}
+                <button
+                  type="button"
+                  onClick={() => toggleFaq(faq.id)}
+                  className="w-full text-left py-2.5 flex items-center justify-between gap-4 transition-colors cursor-pointer group focus:outline-none"
+                  aria-expanded={isOpen}
+                >
+                  <span className="font-sans text-base sm:text-lg font-medium text-[#C0623A] group-hover:opacity-85 transition-opacity">
+                    {faq.question}
+                  </span>
+
+                  {/* MINUS (OPEN) / PLUS (CLOSED) ACCORDION ICON */}
+                  <span className="flex-shrink-0 text-[#C0623A] transition-transform duration-200">
+                    {isOpen ? (
+                      <Minus className="w-5 h-5 stroke-[2]" />
+                    ) : (
+                      <Plus className="w-5 h-5 stroke-[2] text-stone-400 group-hover:text-[#C0623A]" />
+                    )}
+                  </span>
+                </button>
+
+                {/* EXPANDED ANSWER CONTENT */}
+                {isOpen && (
+                  <div className="pt-2 pb-3 pr-4 sm:pr-10 animate-fadeIn">
+                    <p className="font-sans text-xs sm:text-sm text-stone-700 leading-relaxed font-normal whitespace-pre-line">
+                      {faq.answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Need More Help Footer Link */}
+        <div className="pt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-500 border-t border-stone-100 mt-8">
+          <span className="font-light">
+            Still have queries regarding warranties, installation, or custom bespoke orders?
+          </span>
+          <Link
+            to="/support"
+            className="inline-flex items-center gap-1.5 font-semibold text-[#A73D4D] hover:text-[#C0623A] transition-colors"
+          >
+            <span>Contact Support Desk</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
     </section>

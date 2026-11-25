@@ -7,7 +7,7 @@ import {
   updateProfile,
   changePassword,
 } from "../controllers/authController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -28,8 +28,8 @@ router.post("/admin/logout", protect, logoutUser); // Backward compatibility
 router.get("/me", protect, getCurrentUser);
 router.get("/admin/me", protect, getCurrentUser); // Backward compatibility
 
-// Customer Profile Management Routes (Protected)
-router.put("/profile", protect, updateProfile);
-router.put("/password", protect, changePassword);
+// Customer Profile Management Routes (Protected for Customer Role Only)
+router.put("/profile", protect, authorize("customer"), updateProfile);
+router.put("/password", protect, authorize("customer"), changePassword);
 
 export default router;

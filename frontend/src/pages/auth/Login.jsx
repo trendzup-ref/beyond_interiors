@@ -26,17 +26,16 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // If already authenticated, redirect according to role
+  // If already authenticated, redirect strictly according to role
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
       if (user.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
-        const from = location.state?.from?.pathname || "/";
-        navigate(from, { replace: true });
+        navigate("/", { replace: true });
       }
     }
-  }, [loading, isAuthenticated, user, navigate, location.state]);
+  }, [loading, isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,12 +52,11 @@ const Login = () => {
 
     if (result.success) {
       const authenticatedUser = result.user;
-      // Role-based redirection based strictly on the backend response
+      // Strict role-based redirection
       if (authenticatedUser?.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
       } else {
-        const from = location.state?.from?.pathname || "/";
-        navigate(from, { replace: true });
+        navigate("/", { replace: true });
       }
     } else {
       setFormError(result.error);
