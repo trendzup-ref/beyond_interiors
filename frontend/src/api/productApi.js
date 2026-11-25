@@ -4,6 +4,14 @@ export const getProducts = async (params) => {
   return await axiosClient.get("/admin/products", { params });
 };
 
+export const getPublicProducts = async (params) => {
+  return await axiosClient.get("/public/products", { params });
+};
+
+export const getPublicProduct = async (id) => {
+  return await axiosClient.get(`/public/products/${id}`);
+};
+
 export const getProduct = async (id) => {
   return await axiosClient.get(`/admin/products/${id}`);
 };

@@ -27,11 +27,25 @@ export const createCategory = async (req, res, next) => {
       return sendError(res, 400, "A category with this name already exists.");
     }
 
+    let imagePath = "";
+    if (req.file) {
+      imagePath = `/uploads/${req.file.filename}`;
+    } else if (image) {
+      imagePath = typeof image === "string" ? image.trim() : "";
+    }
+
+    const activeState =
+      typeof isActive === "string"
+        ? isActive === "true"
+        : isActive !== undefined
+        ? isActive
+        : true;
+
     const category = new Category({
       name: name.trim(),
       description: description?.trim() || "",
-      image: image?.trim() || "",
-      isActive: isActive !== undefined ? isActive : true,
+      image: imagePath,
+      isActive: activeState,
     });
 
     await category.save();
@@ -147,8 +161,15 @@ export const updateCategory = async (req, res, next) => {
     }
 
     if (description !== undefined) category.description = description.trim();
-    if (image !== undefined) category.image = image.trim();
-    if (isActive !== undefined) category.isActive = isActive;
+    if (req.file) {
+      category.image = `/uploads/${req.file.filename}`;
+    } else if (image !== undefined) {
+      category.image = typeof image === "string" ? image.trim() : "";
+    }
+    if (isActive !== undefined) {
+      category.isActive =
+        typeof isActive === "string" ? isActive === "true" : Boolean(isActive);
+    }
 
     await category.save();
 
@@ -228,12 +249,26 @@ export const createSubcategory = async (req, res, next) => {
       );
     }
 
+    let imagePath = "";
+    if (req.file) {
+      imagePath = `/uploads/${req.file.filename}`;
+    } else if (image) {
+      imagePath = typeof image === "string" ? image.trim() : "";
+    }
+
+    const activeState =
+      typeof isActive === "string"
+        ? isActive === "true"
+        : isActive !== undefined
+        ? isActive
+        : true;
+
     const subcategory = new Subcategory({
       name: name.trim(),
       category,
       description: description?.trim() || "",
-      image: image?.trim() || "",
-      isActive: isActive !== undefined ? isActive : true,
+      image: imagePath,
+      isActive: activeState,
     });
 
     await subcategory.save();
@@ -351,8 +386,15 @@ export const updateSubcategory = async (req, res, next) => {
     }
 
     if (description !== undefined) subcategory.description = description.trim();
-    if (image !== undefined) subcategory.image = image.trim();
-    if (isActive !== undefined) subcategory.isActive = isActive;
+    if (req.file) {
+      subcategory.image = `/uploads/${req.file.filename}`;
+    } else if (image !== undefined) {
+      subcategory.image = typeof image === "string" ? image.trim() : "";
+    }
+    if (isActive !== undefined) {
+      subcategory.isActive =
+        typeof isActive === "string" ? isActive === "true" : Boolean(isActive);
+    }
 
     await subcategory.save();
     await subcategory.populate("category", "name slug");

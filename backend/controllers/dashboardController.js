@@ -24,6 +24,22 @@ export const getDashboardStats = async (req, res, next) => {
     let pendingOrders = 0;
     let recentOrders = [];
 
+    // 6-month revenue timeline for dashboard graph
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const monthlyRevenue = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      monthlyRevenue.push({
+        year: d.getFullYear(),
+        monthNum: d.getMonth() + 1,
+        month: monthNames[d.getMonth()],
+        revenue: 0,
+        orders: 0,
+      });
+    }
+
     if (OrderModel) {
       totalOrders = await OrderModel.countDocuments();
       pendingOrders = await OrderModel.countDocuments({
@@ -46,9 +62,40 @@ export const getDashboardStats = async (req, res, next) => {
       ]);
       totalRevenue = revenueAgg.length > 0 ? revenueAgg[0].total : 0;
 
+      // 6-month revenue aggregation
+      const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+      const monthlyAgg = await OrderModel.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: sixMonthsAgo },
+            "offlinePayment.status": { $in: ["paid", "partially_paid"] },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+            },
+            revenue: { $sum: "$offlinePayment.amountReceived" },
+            orders: { $sum: 1 },
+          },
+        },
+      ]);
+
+      monthlyAgg.forEach((agg) => {
+        const target = monthlyRevenue.find(
+          (m) => m.year === agg._id.year && m.monthNum === agg._id.month
+        );
+        if (target) {
+          target.revenue = agg.revenue;
+          target.orders = agg.orders;
+        }
+      });
+
       recentOrders = await OrderModel.find()
         .sort({ createdAt: -1 })
-        .limit(5)
+        .limit(6)
         .populate("customer", "name email phone")
         .lean();
     }
@@ -102,6 +149,7 @@ export const getDashboardStats = async (req, res, next) => {
       },
       recentOrders,
       lowStockItems,
+      monthlyRevenue,
     });
   } catch (error) {
     next(error);

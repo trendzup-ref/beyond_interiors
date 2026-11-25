@@ -24,6 +24,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import installationRoutes from "./routes/installationRoutes.js";
 import siteVisitRoutes from "./routes/siteVisitRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
+import publicRoutes from "./routes/publicRoutes.js";
 import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
@@ -60,6 +61,10 @@ app.get("/", (req, res) => {
     healthCheck: "/api/health",
   });
 });
+
+// Public Storefront APIs
+app.use("/api/public", publicRoutes);
+app.use("/api", publicRoutes);
 
 // API Routes
 app.use("/api/health", healthRoutes);

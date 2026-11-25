@@ -32,21 +32,12 @@ const Header = ({ onToggleSidebar }) => {
         </button>
 
         <div className="hidden sm:flex items-center gap-2 text-xs">
-          <span className="font-semibold text-stone-900 uppercase tracking-wider">
-            Beyond Interiors
-          </span>
-          <span className="text-stone-400">/</span>
           <span className="text-stone-500 font-medium">Administration Portal</span>
         </div>
       </div>
 
       {/* Right: Quick actions & Admin Profile Dropdown */}
       <div className="flex items-center gap-3 sm:gap-4">
-        {/* Offline Payments & Service Mode Badge */}
-        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-medium">
-          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          <span>Offline Payments Mode</span>
-        </div>
 
         {/* Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
@@ -55,14 +46,20 @@ const Header = ({ onToggleSidebar }) => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-stone-50 transition-colors focus:outline-none cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-full bg-stone-900 text-amber-400 flex items-center justify-center font-bold text-xs uppercase shadow-xs">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs uppercase shadow-xs text-white"
+              style={{ backgroundColor: "var(--color-primary)" }}
+            >
               {admin?.name?.charAt(0) || "A"}
             </div>
             <div className="hidden sm:flex flex-col text-left">
               <span className="text-xs font-semibold text-stone-900 leading-tight">
                 {admin?.name || "Administrator"}
               </span>
-              <span className="text-[10px] text-amber-700 font-medium capitalize">
+              <span
+                className="text-[10px] font-bold capitalize"
+                style={{ color: "var(--color-primary)" }}
+              >
                 {admin?.role || "Admin"}
               </span>
             </div>
@@ -77,10 +74,6 @@ const Header = ({ onToggleSidebar }) => {
                 <p className="text-stone-500 text-[11px] truncate">{admin?.email}</p>
               </div>
 
-              <div className="px-3 py-2 text-stone-500 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Super Admin Privileges</span>
-              </div>
 
               <div className="border-t border-stone-100 my-1" />
 

@@ -74,7 +74,13 @@ const productSchema = new mongoose.Schema(
     },
     images: {
       type: [String],
-      default: [],
+      validate: {
+        validator: function (val) {
+          return Array.isArray(val) && val.length >= 1 && val.length <= 5;
+        },
+        message: "A product must have at least 1 image and at most 5 images.",
+      },
+      required: [true, "At least one product image is mandatory."],
     },
     variants: {
       type: [variantSchema],

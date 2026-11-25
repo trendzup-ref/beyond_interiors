@@ -1,25 +1,35 @@
 import express from "express";
 import {
-  loginAdmin,
-  logoutAdmin,
-  getAdminProfile,
+  loginUser,
+  logoutUser,
+  getCurrentUser,
+  registerCustomer,
+  updateProfile,
+  changePassword,
 } from "../controllers/authController.js";
-import { protect, authorize } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 /**
- * Admin Authentication Routes
- * Matches both /api/auth/admin/* and /api/admin/*
+ * Public Authentication Routes
+ * Common unified login and customer registration
  */
-router.post("/login", loginAdmin);
-router.post("/admin/login", loginAdmin);
+router.post("/login", loginUser);
+router.post("/admin/login", loginUser); // Backward compatibility for admin login
+router.post("/register", registerCustomer);
 
-// Protected Admin Routes
-router.post("/logout", protect, authorize("admin"), logoutAdmin);
-router.post("/admin/logout", protect, authorize("admin"), logoutAdmin);
+/**
+ * Protected Authentication Routes (Common for Admin and Customer)
+ */
+router.post("/logout", protect, logoutUser);
+router.post("/admin/logout", protect, logoutUser); // Backward compatibility
 
-router.get("/me", protect, authorize("admin"), getAdminProfile);
-router.get("/admin/me", protect, authorize("admin"), getAdminProfile);
+router.get("/me", protect, getCurrentUser);
+router.get("/admin/me", protect, getCurrentUser); // Backward compatibility
+
+// Customer Profile Management Routes (Protected)
+router.put("/profile", protect, updateProfile);
+router.put("/password", protect, changePassword);
 
 export default router;

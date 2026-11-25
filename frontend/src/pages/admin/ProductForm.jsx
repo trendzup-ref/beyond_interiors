@@ -41,7 +41,7 @@ const ProductForm = () => {
     description: "",
     category: "",
     subcategory: "",
-    images: [""],
+    images: [],
     variants: [{ ...defaultVariant, sku: "PROD-VAR-1" }],
     isFeatured: false,
     isActive: true,
@@ -69,7 +69,7 @@ const ProductForm = () => {
               description: p.description || "",
               category: p.category?._id || p.category || "",
               subcategory: p.subcategory?._id || p.subcategory || "",
-              images: p.images && p.images.length > 0 ? p.images : [""],
+              images: p.images || [],
               variants: p.variants || [{ ...defaultVariant, sku: "PROD-VAR-1" }],
               isFeatured: p.isFeatured || false,
               isActive: p.isActive !== undefined ? p.isActive : true,
@@ -109,26 +109,37 @@ const ProductForm = () => {
     }
   };
 
-  // Image URL management
-  const handleImageUrlChange = (index, value) => {
-    const updated = [...formData.images];
-    updated[index] = value;
-    setFormData({ ...formData, images: updated });
-  };
-
-  const handleAddImageUrl = () => {
-    setFormData({ ...formData, images: [...formData.images, ""] });
-  };
-
-  const handleRemoveImageUrl = (index) => {
-    const updated = formData.images.filter((_, i) => i !== index);
-    setFormData({ ...formData, images: updated.length ? updated : [""] });
+  // Image Management (Direct upload & remove)
+  const handleRemoveImage = (indexToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== indexToRemove),
+    }));
   };
 
   // File upload trigger
   const handleFileUpload = async (e) => {
-    const files = e.target.files;
+    const files = Array.from(e.target.files || []);
     if (!files || files.length === 0) return;
+
+    const currentCount = formData.images.length;
+    const remainingSlots = 5 - currentCount;
+
+    if (remainingSlots <= 0) {
+      setError("Maximum limit of 5 images reached. Please remove an existing image before adding another.");
+      e.target.value = "";
+      return;
+    }
+
+    if (files.length > remainingSlots) {
+      setError(
+        `You can only select up to ${remainingSlots} more image${
+          remainingSlots > 1 ? "s" : ""
+        } (Maximum 5 images allowed per product).`
+      );
+      e.target.value = "";
+      return;
+    }
 
     const data = new FormData();
     for (let i = 0; i < files.length; i++) {
@@ -137,17 +148,21 @@ const ProductForm = () => {
 
     try {
       setUploadingImage(true);
+      setError("");
       const res = await uploadProductImages(data);
       const uploadedUrls = res.data?.images || [];
-      const cleaned = formData.images.filter((url) => url.trim() !== "");
-      setFormData({
-        ...formData,
-        images: [...cleaned, ...uploadedUrls],
+      setFormData((prev) => {
+        const combined = [...prev.images, ...uploadedUrls];
+        return {
+          ...prev,
+          images: combined.slice(0, 5),
+        };
       });
     } catch (err) {
       setError(err.message || "Image upload failed.");
     } finally {
       setUploadingImage(false);
+      e.target.value = "";
     }
   };
 
@@ -218,7 +233,17 @@ const ProductForm = () => {
       });
     }
 
-    const cleanImages = formData.images.filter((img) => img.trim() !== "");
+    const cleanImages = formData.images.filter((img) => Boolean(img && img.trim()));
+
+    if (cleanImages.length === 0) {
+      setError("At least one product image is mandatory. Please upload at least 1 image.");
+      return;
+    }
+
+    if (cleanImages.length > 5) {
+      setError("You can upload a maximum of 5 images per product.");
+      return;
+    }
 
     const payload = {
       name: formData.name.trim(),
@@ -249,7 +274,10 @@ const ProductForm = () => {
   if (fetching) {
     return (
       <div className="min-h-96 flex flex-col items-center justify-center space-y-3">
-        <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin"
+          style={{ borderColor: "var(--color-primary)", borderTopColor: "transparent" }}
+        />
         <p className="text-xs text-stone-500 font-medium">Loading product details...</p>
       </div>
     );
@@ -297,7 +325,8 @@ const ProductForm = () => {
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            className="px-5 py-2 rounded-lg text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            style={{ backgroundColor: "var(--color-primary)" }}
           >
             {loading ? "Saving..." : isEditing ? "Update Product" : "Publish Product"}
           </button>
@@ -453,67 +482,156 @@ const ProductForm = () => {
           </div>
         </div>
 
-        {/* Section 2: Product Images */}
+        {/* Section 2: Product Images (1 Mandatory, Max 5) */}
         <div className="bg-white rounded-xl border border-stone-200 shadow-2xs p-6 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-stone-100">
-            <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <UploadCloud className="w-4 h-4 text-amber-600" />
-              <span>Product Images</span>
-            </h2>
-            <label className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium cursor-pointer transition-colors">
-              <span>{uploadingImage ? "Uploading..." : "+ Upload Local Image"}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-stone-100">
+            <div>
+              <div className="flex items-center gap-2">
+                <UploadCloud className="w-4 h-4 text-primary" />
+                <h2 className="text-sm font-bold text-stone-900">Product Images</h2>
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  style={{
+                    backgroundColor:
+                      formData.images.length === 0
+                        ? "var(--color-tertiary)"
+                        : formData.images.length === 5
+                        ? "#ecfdf5"
+                        : "var(--color-tertiary)",
+                    color:
+                      formData.images.length === 0
+                        ? "var(--color-primary)"
+                        : formData.images.length === 5
+                        ? "#065f46"
+                        : "var(--color-primary)",
+                    border: "1px solid var(--color-secondary)",
+                  }}
+                >
+                  {formData.images.length}/5 uploaded {formData.images.length === 0 ? "• Required" : ""}
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-500 mt-1">
+                Upload up to 5 photos from your device. <strong className="text-stone-700">At least 1 photo is mandatory</strong>. The first photo is your primary catalog cover.
+              </p>
+            </div>
+
+            {formData.images.length < 5 ? (
+              <label
+                className="px-3.5 py-1.5 rounded-lg text-white text-xs font-semibold cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5 self-start sm:self-auto"
+                style={{ backgroundColor: "var(--color-primary)" }}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{uploadingImage ? "Uploading..." : "Upload Photos"}</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={uploadingImage || formData.images.length >= 5}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">
+                Maximum 5/5 Photos Uploaded
+              </span>
+            )}
+          </div>
+
+          {/* Upload Dropzone */}
+          {formData.images.length < 5 ? (
+            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-stone-300 hover:border-primary rounded-xl bg-stone-50/50 hover:bg-tertiary/20 cursor-pointer transition-colors group">
+              <UploadCloud
+                className="w-8 h-8 text-stone-400 group-hover:text-primary transition-colors mb-2"
+              />
+              <span className="text-xs font-semibold text-stone-700 group-hover:text-primary">
+                {uploadingImage
+                  ? "Uploading images to server..."
+                  : `Click to select or drag & drop (${5 - formData.images.length} slot${
+                      5 - formData.images.length > 1 ? "s" : ""
+                    } remaining)`}
+              </span>
+              <span className="text-[10px] text-stone-400 mt-0.5">
+                PNG, JPG, WEBP up to 5MB each (Max 5 images per product)
+              </span>
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handleFileUpload}
-                disabled={uploadingImage}
+                disabled={uploadingImage || formData.images.length >= 5}
                 className="hidden"
               />
             </label>
-          </div>
+          ) : (
+            <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-center text-xs text-stone-600 font-medium">
+              Image upload limit reached (5 of 5). To change photos, delete an image from the gallery below.
+            </div>
+          )}
 
-          <div className="space-y-2.5">
-            {formData.images.map((imgUrl, idx) => (
-              <div key={idx} className="flex items-center gap-2.5">
-                {imgUrl ? (
+          {/* Uploaded Images Gallery Grid */}
+          {formData.images.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-2">
+              {formData.images.map((imgUrl, idx) => (
+                <div
+                  key={idx}
+                  className="relative group rounded-xl overflow-hidden border border-stone-200 bg-stone-100 aspect-square shadow-2xs flex items-center justify-center"
+                >
                   <img
                     src={imgUrl}
-                    alt="Preview"
-                    className="w-9 h-9 rounded-lg object-cover border border-stone-200 shrink-0"
-                    onError={(e) => (e.target.style.display = "none")}
+                    alt={`Product photo ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://placehold.co/300x300?text=Preview+Error";
+                    }}
                   />
-                ) : (
-                  <div className="w-9 h-9 rounded-lg bg-stone-100 border border-stone-200 text-stone-400 flex items-center justify-center text-[10px] shrink-0">
-                    URL
-                  </div>
-                )}
-                <input
-                  type="text"
-                  value={imgUrl}
-                  onChange={(e) => handleImageUrlChange(idx, e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-... or /uploads/..."
-                  className="flex-1 px-3.5 py-2 rounded-lg border border-stone-300 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImageUrl(idx)}
-                  className="p-2 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50"
-                  title="Remove image"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
 
-            <button
-              type="button"
-              onClick={handleAddImageUrl}
-              className="text-xs font-semibold text-amber-700 hover:underline pt-1 inline-block"
+                  {/* Primary Cover Badge */}
+                  {idx === 0 && (
+                    <span
+                      className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-xs uppercase tracking-wider"
+                      style={{ backgroundColor: "var(--color-primary)" }}
+                    >
+                      Cover
+                    </span>
+                  )}
+
+                  {/* Image Sequence Indicator */}
+                  <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-stone-900/70 text-white backdrop-blur-xs">
+                    {idx + 1}/5
+                  </span>
+
+                  {/* Delete Overlay */}
+                  <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      className="p-2 rounded-full bg-white/95 text-red-600 hover:bg-white hover:text-red-700 shadow-md transition-transform hover:scale-110 cursor-pointer"
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              className="p-4 rounded-xl text-center border"
+              style={{
+                backgroundColor: "var(--color-tertiary)",
+                borderColor: "var(--color-secondary)",
+              }}
             >
-              + Add Image URL Field
-            </button>
-          </div>
+              <p className="text-xs font-semibold" style={{ color: "var(--color-primary)" }}>
+                ⚠ At least 1 image is mandatory to create/save this product.
+              </p>
+              <p className="text-[11px] text-stone-600 mt-0.5">
+                Upload 1 to 5 clear photos to showcase your interior design collection.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Section 3: Product Variants & Inventory */}

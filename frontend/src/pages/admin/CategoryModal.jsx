@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, AlertCircle } from "lucide-react";
+import { X, AlertCircle, UploadCloud, ImageIcon } from "lucide-react";
 import {
   createCategory,
   updateCategory,
@@ -19,10 +19,11 @@ const CategoryModal = ({
     name: "",
     category: "",
     description: "",
-    image: "",
     isActive: true,
   });
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,22 +35,48 @@ const CategoryModal = ({
         name: item.name || "",
         category: item.category?._id || item.category || "",
         description: item.description || "",
-        image: item.image || "",
         isActive: item.isActive !== undefined ? item.isActive : true,
       });
+      setImagePreview(item.image || "");
+      setImageFile(null);
     } else {
       setFormData({
         name: "",
         category: categories.length > 0 ? categories[0]._id : "",
         description: "",
-        image: "",
         isActive: true,
       });
+      setImagePreview("");
+      setImageFile(null);
     }
     setError("");
   }, [item, isOpen, categories]);
 
   if (!isOpen) return null;
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file (.jpg, .png, .webp).");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must be less than 5MB.");
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setError("");
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,40 +95,32 @@ const CategoryModal = ({
     try {
       setLoading(true);
 
+      const submitData = new FormData();
+      submitData.append("name", formData.name.trim());
+      submitData.append("description", formData.description.trim());
+      submitData.append("isActive", formData.isActive);
+
+      if (imageFile) {
+        submitData.append("image", imageFile);
+      } else if (imagePreview) {
+        submitData.append("image", imagePreview);
+      } else {
+        submitData.append("image", "");
+      }
+
       if (type === "category") {
         if (isEditing) {
-          await updateCategory(item._id, {
-            name: formData.name,
-            description: formData.description,
-            image: formData.image,
-            isActive: formData.isActive,
-          });
+          await updateCategory(item._id, submitData);
         } else {
-          await createCategory({
-            name: formData.name,
-            description: formData.description,
-            image: formData.image,
-            isActive: formData.isActive,
-          });
+          await createCategory(submitData);
         }
       } else {
         // Subcategory
+        submitData.append("category", formData.category);
         if (isEditing) {
-          await updateSubcategory(item._id, {
-            name: formData.name,
-            category: formData.category,
-            description: formData.description,
-            image: formData.image,
-            isActive: formData.isActive,
-          });
+          await updateSubcategory(item._id, submitData);
         } else {
-          await createSubcategory({
-            name: formData.name,
-            category: formData.category,
-            description: formData.description,
-            image: formData.image,
-            isActive: formData.isActive,
-          });
+          await createSubcategory(submitData);
         }
       }
 
@@ -191,18 +210,67 @@ const CategoryModal = ({
             </div>
           )}
 
-          {/* Image URL */}
+          {/* Direct File Image Upload */}
           <div>
             <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
-              Image URL (Optional)
+              {type === "category" ? "Category Image" : "Subcategory Image"} (Optional)
             </label>
-            <input
-              type="url"
-              value={formData.image}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              placeholder="https://images.unsplash.com/photo-..."
-              className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500"
-            />
+
+            {imagePreview ? (
+              <div className="relative flex items-center gap-3.5 p-3 rounded-xl border border-stone-200 bg-stone-50">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-16 h-16 rounded-lg object-cover border border-stone-200 shadow-2xs shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-stone-900 truncate">
+                    {imageFile ? imageFile.name : "Current image"}
+                  </p>
+                  <p className="text-[11px] text-stone-500">
+                    {imageFile ? `${(imageFile.size / 1024).toFixed(1)} KB` : "Stored image"}
+                  </p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <label
+                      className="text-[11px] font-semibold cursor-pointer"
+                      style={{ color: "var(--color-primary)" }}
+                    >
+                      <span>Change Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                    <span className="text-stone-300">•</span>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="text-[11px] font-semibold text-red-600 hover:text-red-700 cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-stone-300 hover:border-primary rounded-xl bg-stone-50/50 hover:bg-tertiary/20 cursor-pointer transition-colors group">
+                <UploadCloud className="w-8 h-8 text-stone-400 group-hover:text-primary transition-colors mb-1.5" />
+                <span className="text-xs font-semibold text-stone-700 group-hover:text-primary">
+                  Click to upload image file
+                </span>
+                <span className="text-[10px] text-stone-400 mt-0.5">
+                  PNG, JPG, WEBP, GIF up to 5MB
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
 
           {/* Description */}
@@ -215,7 +283,7 @@ const CategoryModal = ({
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Short summary of this interior design collection..."
-              className="w-full px-3.5 py-2 rounded-lg border border-stone-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 resize-none"
+              className="w-full px-3.5 py-2 rounded-lg border border-stone-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary resize-none"
             />
           </div>
 
@@ -226,7 +294,8 @@ const CategoryModal = ({
               id="isActiveToggle"
               checked={formData.isActive}
               onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="w-4 h-4 text-amber-600 rounded border-stone-300 focus:ring-amber-500 cursor-pointer"
+              className="w-4 h-4 rounded border-stone-300 focus:ring-primary cursor-pointer"
+              style={{ accentColor: "var(--color-primary)" }}
             />
             <label
               htmlFor="isActiveToggle"
@@ -249,7 +318,8 @@ const CategoryModal = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium shadow-sm transition-colors cursor-pointer disabled:opacity-60"
+              className="px-5 py-2 rounded-lg text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-60"
+              style={{ backgroundColor: "var(--color-primary)" }}
             >
               {loading ? "Saving..." : isEditing ? "Save Changes" : "Create"}
             </button>

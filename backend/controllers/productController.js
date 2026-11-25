@@ -55,6 +55,14 @@ export const createProduct = async (req, res, next) => {
       return sendError(res, 400, "Category is required.");
     }
 
+    // Image validations: At least 1 image mandatory, maximum 5 images
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return sendError(res, 400, "At least one product image is mandatory.");
+    }
+    if (images.length > 5) {
+      return sendError(res, 400, "You can upload a maximum of 5 images per product.");
+    }
+
     // Verify Category exists
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
@@ -261,6 +269,12 @@ export const updateProduct = async (req, res, next) => {
     }
 
     if (images !== undefined) {
+      if (!Array.isArray(images) || images.length === 0) {
+        return sendError(res, 400, "At least one product image is mandatory.");
+      }
+      if (images.length > 5) {
+        return sendError(res, 400, "You can upload a maximum of 5 images per product.");
+      }
       product.images = images;
     }
 
