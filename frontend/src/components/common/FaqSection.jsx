@@ -63,7 +63,7 @@ const FaqSection = ({
   return (
     <section className={`w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 ${className}`}>
       {/* OUTER CARD CONTAINER WITH SOFT WARM AMBIENT BACKGROUND */}
-      <div className="relative w-full rounded-3xl sm:rounded-[36px] bg-[#FAF7F2] border border-stone-200/70 p-6 sm:p-10 md:p-14 lg:p-16 overflow-hidden shadow-xs">
+      <div className="relative w-full  overflow-hidden">
         {/* ================= SECTION HEADER (Reference Exact Match) ================= */}
         <div className="mb-10 sm:mb-14">
           <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-stone-900 leading-tight">
@@ -119,11 +119,10 @@ const FaqSection = ({
               return (
                 <div
                   key={faq.id}
-                  className={`rounded-2xl transition-all duration-300 border ${
-                    isOpen
-                      ? "bg-[#F3EDE3] border-stone-300/80 shadow-xs"
-                      : "bg-transparent hover:bg-stone-100/60 border-transparent"
-                  }`}
+                  className={`rounded-2xl transition-all duration-300 border ${isOpen
+                    ? "bg-[#F3EDE3] border-stone-300/80 shadow-xs"
+                    : "bg-transparent hover:bg-stone-100/60 border-transparent"
+                    }`}
                 >
                   {/* QUESTION BUTTON */}
                   <button
@@ -132,20 +131,18 @@ const FaqSection = ({
                     aria-expanded={isOpen}
                   >
                     <span
-                      className={`font-serif text-base sm:text-lg font-bold leading-snug transition-colors ${
-                        isOpen ? "text-stone-950" : "text-stone-800 hover:text-stone-950"
-                      }`}
+                      className={`font-serif text-base sm:text-lg font-bold leading-snug transition-colors ${isOpen ? "text-stone-950" : "text-stone-800 hover:text-stone-950"
+                        }`}
                     >
                       {faq.question}
                     </span>
 
                     {/* PLUS / MINUS TOGGLE ICON (Reference Exact Match) */}
                     <span
-                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                        isOpen
-                          ? "bg-stone-900 text-white"
-                          : "bg-stone-200/80 text-stone-700 hover:bg-stone-300"
-                      }`}
+                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isOpen
+                        ? "bg-stone-900 text-white"
+                        : "bg-stone-200/80 text-stone-700 hover:bg-stone-300"
+                        }`}
                     >
                       {isOpen ? (
                         <Minus className="w-4 h-4" />

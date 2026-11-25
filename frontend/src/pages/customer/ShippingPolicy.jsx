@@ -356,41 +356,10 @@ const ShippingPolicy = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-transparent to-stone-950/80" />
       </div>
 
-      {/* ================= TOP NAVIGATION BAR ================= */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-stone-950/70 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-4">
-        <div className="max-w-[1520px] mx-auto flex items-center justify-between">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2.5 text-stone-300 hover:text-white text-xs font-semibold transition-colors group"
-          >
-            <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center group-hover:bg-amber-600 transition-colors">
-              <ArrowLeft className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-serif text-sm tracking-wider uppercase font-bold text-white">
-              BEYOND INTERIORS
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] font-mono font-medium text-stone-400 uppercase tracking-widest hidden sm:inline">
-              POLICY ARCHITECTURE
-            </span>
-            <Link
-              to="/return-policy"
-              className="text-xs font-medium text-amber-400 hover:text-amber-300 underline underline-offset-4"
-            >
-              View Return Policy &rarr;
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* ================= TOP-LEFT SQUARES NAVIGATION CONTROLLER ================= */}
-      <div className="fixed top-24 left-4 sm:left-8 z-40 hidden md:flex flex-col gap-1.5 p-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 shadow-2xl">
-        <span className="text-[9px] font-mono uppercase tracking-widest text-stone-400 text-center py-1">
-          SECTIONS
-        </span>
-        <div className="grid grid-cols-2 gap-1.5 max-h-[65vh] overflow-y-auto no-scrollbar">
+      <div className="fixed top-32 left-4 sm:left-8 z-40 hidden md:flex flex-col gap-1.5">
+
+        <div className="grid grid-cols-2 gap-1.5 max-h-[75vh] overflow-y-auto overflow-x-hidden no-scrollbar">
           {SHIPPING_SECTIONS.map((sec) => {
             const isActive = activeSectionId === sec.id;
             return (
@@ -398,13 +367,11 @@ const ShippingPolicy = () => {
                 key={sec.id}
                 onClick={() => scrollToSection(sec.id)}
                 title={`${sec.number}: ${sec.title}`}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-mono text-xs font-bold transition-all duration-300 ${
-                  isActive
-                    ? "bg-amber-600 text-white shadow-lg shadow-amber-600/40 scale-105 border border-amber-400"
-                    : "bg-white/10 text-stone-300 hover:bg-white/20 hover:text-white border border-white/10"
-                }`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-mono text-xs font-bold transition-all duration-300 ${isActive
+                  ? "bg-amber-600 text-white shadow-lg shadow-amber-600/40 scale-105 border border-amber-400"
+                  : "bg-white/10 text-stone-300 hover:bg-white/20 hover:text-white border border-white/10"
+                  }`}
               >
-                {sec.number}
               </button>
             );
           })}
@@ -414,11 +381,6 @@ const ShippingPolicy = () => {
       {/* ================= PAGE HERO HEADER ================= */}
       <header className="relative z-10 pt-36 sm:pt-44 pb-16 px-4 sm:px-8 max-w-[1520px] mx-auto md:pl-36">
         <div className="max-w-4xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-600/20 border border-amber-500/40 text-amber-300 text-xs font-mono tracking-widest uppercase">
-            <Truck className="w-3.5 h-3.5" />
-            <span>GLOBAL DISPATCH & LOGISTICS FRAMEWORK</span>
-          </div>
-
           <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.08]">
             Shipping Policy
           </h1>
@@ -453,24 +415,8 @@ const ShippingPolicy = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false, amount: 0.25 }}
                 transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-3xl space-y-6 bg-black/60 backdrop-blur-xl p-6 sm:p-10 md:p-12 rounded-3xl border border-white/15 shadow-2xl"
+                className="max-w-full w-full space-y-6 p-6 sm:p-10 md:p-12"
               >
-                {/* Section Index & Category Pill */}
-                <div className="flex items-center justify-between border-b border-white/15 pb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-lg sm:text-xl font-bold text-amber-400">
-                      {section.number}
-                    </span>
-                    <span className="text-stone-500">/</span>
-                    <span className="text-xs font-mono uppercase tracking-widest text-stone-300 font-semibold">
-                      {section.label}
-                    </span>
-                  </div>
-
-                  <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-amber-400">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                </div>
 
                 {/* Section Title */}
                 <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-snug">
@@ -485,38 +431,11 @@ const ShippingPolicy = () => {
                 {/* Deep Full Policy Content */}
                 <div className="pt-2">{section.content}</div>
 
-                {/* Bottom Action Pill matching reference */}
-                <div className="pt-4 flex items-center justify-between border-t border-white/10 text-xs text-stone-400">
-                  <span className="font-mono">Section {idx + 1} of 10</span>
-                  <button
-                    onClick={() => {
-                      const next = SHIPPING_SECTIONS[(idx + 1) % SHIPPING_SECTIONS.length];
-                      scrollToSection(next.id);
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white text-stone-200 hover:text-stone-900 transition-colors font-semibold"
-                  >
-                    <span>Next Section</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
-                </div>
               </motion.div>
             </section>
           );
         })}
       </main>
-
-      {/* ================= FOOTER ================= */}
-      <footer className="relative z-10 bg-stone-950 border-t border-white/10 py-10 px-4 sm:px-8 text-xs text-stone-500 text-center">
-        <div className="max-w-[1520px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="font-serif font-bold text-white tracking-wider">BEYOND INTERIORS</p>
-          <p>&copy; {new Date().getFullYear()} Beyond Interiors. All rights reserved.</p>
-          <div className="flex items-center gap-4 text-xs text-stone-400">
-            <Link to="/shipping-policy" className="text-amber-400 font-semibold">Shipping</Link>
-            <Link to="/return-policy" className="hover:text-white">Returns & Refunds</Link>
-            <Link to="/" className="hover:text-white">Home</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

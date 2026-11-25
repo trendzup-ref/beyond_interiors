@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/layout/ProtectedRoute.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
+import CustomerLayout from "./components/layout/CustomerLayout.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import CustomerHome from "./pages/customer/CustomerHome.jsx";
@@ -34,7 +35,6 @@ import OrderTracking from "./pages/customer/OrderTracking.jsx";
 import SupportPage from "./pages/customer/SupportPage.jsx";
 import { CartWishlistProvider } from "./context/CartWishlistContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
-import CartDrawer from "./components/cart/CartDrawer.jsx";
 
 function App() {
   return (
@@ -42,52 +42,54 @@ function App() {
       <AuthProvider>
         <NotificationProvider>
           <CartWishlistProvider>
-            <CartDrawer />
             <Routes>
               {/* Public Common Authentication Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/admin/login" element={<Navigate to="/login" replace />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Customer Storefront & Catalog */}
-              <Route path="/" element={<CustomerHome />} />
-              <Route path="/products" element={<ProductListing />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/product/:id" element={<Navigate to="/products/:id" replace />} />
+              {/* Consistent Customer Storefront Layout (Unified IKEA-Style Navbar & Luxury Footer) */}
+              <Route element={<CustomerLayout />}>
+                {/* Storefront & Catalog */}
+                <Route path="/" element={<CustomerHome />} />
+                <Route path="/products" element={<ProductListing />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/product/:id" element={<Navigate to="/products/:id" replace />} />
 
-              {/* Shopping Cart & Wishlist Pages */}
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/shopping-bag" element={<Navigate to="/cart" replace />} />
-              <Route path="/wishlist" element={<WishlistPage />} />
+                {/* Shopping Cart & Wishlist Pages */}
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/shopping-bag" element={<Navigate to="/cart" replace />} />
+                <Route path="/wishlist" element={<WishlistPage />} />
 
-              {/* Installation Services Browsing & Booking */}
-              <Route path="/services" element={<InstallationServices />} />
-              <Route path="/installation" element={<Navigate to="/services" replace />} />
-              <Route path="/installations" element={<Navigate to="/services" replace />} />
+                {/* Installation Services Browsing & Booking */}
+                <Route path="/services" element={<InstallationServices />} />
+                <Route path="/installation" element={<Navigate to="/services" replace />} />
+                <Route path="/installations" element={<Navigate to="/services" replace />} />
 
-              {/* Live Order & Installation Tracking */}
-              <Route path="/track" element={<OrderTracking />} />
-              <Route path="/tracking" element={<Navigate to="/track" replace />} />
-              <Route path="/my-orders" element={<OrderTracking />} />
+                {/* Live Order & Installation Tracking */}
+                <Route path="/track" element={<OrderTracking />} />
+                <Route path="/tracking" element={<Navigate to="/track" replace />} />
+                <Route path="/my-orders" element={<OrderTracking />} />
 
-              {/* Concierge Help, Tickets & Support */}
-              <Route path="/support" element={<SupportPage />} />
-              <Route path="/help" element={<Navigate to="/support" replace />} />
-              <Route path="/contact" element={<Navigate to="/support" replace />} />
+                {/* Concierge Help, Tickets & Support */}
+                <Route path="/support" element={<SupportPage />} />
+                <Route path="/help" element={<Navigate to="/support" replace />} />
+                <Route path="/contact" element={<Navigate to="/support" replace />} />
 
-              {/* Store Policies */}
-              <Route path="/shipping-policy" element={<ShippingPolicy />} />
-              <Route path="/shipping" element={<Navigate to="/shipping-policy" replace />} />
-              <Route path="/return-policy" element={<ReturnPolicy />} />
-              <Route path="/returns" element={<Navigate to="/return-policy" replace />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/terms-and-conditions" element={<Navigate to="/terms" replace />} />
+                {/* Store Policies */}
+                <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                <Route path="/shipping" element={<Navigate to="/shipping-policy" replace />} />
+                <Route path="/return-policy" element={<ReturnPolicy />} />
+                <Route path="/returns" element={<Navigate to="/return-policy" replace />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/terms-and-conditions" element={<Navigate to="/terms" replace />} />
 
-              {/* Customer Protected Routes (Allowed role: 'customer' only) */}
-              <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
-                <Route path="/account" element={<CustomerAccount />} />
+                {/* Customer Protected Routes (Allowed role: 'customer' only) */}
+                <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
+                  <Route path="/account" element={<CustomerAccount />} />
+                </Route>
               </Route>
 
           {/* Admin Protected Portal (Allowed role: 'admin' only) */}

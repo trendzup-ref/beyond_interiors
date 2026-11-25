@@ -85,7 +85,7 @@ const HeroBanner = ({ slides = DEFAULT_HERO_SLIDES, autoPlayInterval = 6000 }) =
     <section className="w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* Outer Banner Card with Large Rounded Corners & Expansive Width */}
       <div
-        className="relative w-full h-[500px] sm:h-[580px] md:h-[640px] lg:h-[700px] rounded-3xl sm:rounded-[36px] overflow-hidden shadow-lg border border-stone-200/50 group"
+        className="relative w-full h-[200px] sm:h-[380px] md:h-[240px] lg:h-[300px] rounded-3xl sm:rounded-[36px] overflow-hidden shadow-lg border border-stone-200/50 group"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -97,8 +97,8 @@ const HeroBanner = ({ slides = DEFAULT_HERO_SLIDES, autoPlayInterval = 6000 }) =
             <div
               key={slide.id || index}
               className={`absolute inset-0 w-full h-full transition-all duration-1000 ease-in-out ${isActive
-                  ? "opacity-100 z-10 scale-100"
-                  : "opacity-0 z-0 pointer-events-none scale-105"
+                ? "opacity-100 z-10 scale-100"
+                : "opacity-0 z-0 pointer-events-none scale-105"
                 }`}
               aria-hidden={!isActive}
             >
@@ -116,12 +116,6 @@ const HeroBanner = ({ slides = DEFAULT_HERO_SLIDES, autoPlayInterval = 6000 }) =
 
               {/* ABSOLUTE EDITORIAL TEXT OVERLAY */}
               <div className="absolute inset-0 z-20 flex flex-col justify-between p-6 sm:p-10 md:p-16 lg:p-20">
-                {/* Top Tagline */}
-                <div>
-                  <span className="inline-block text-[10px] sm:text-xs font-mono font-semibold tracking-widest uppercase text-amber-300/90 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-                    {slide.tagline}
-                  </span>
-                </div>
 
                 {/* Center / Lower-Left Editorial Typography & CTA */}
                 <div className="max-w-xl md:max-w-2xl space-y-4 sm:space-y-6">
@@ -161,8 +155,8 @@ const HeroBanner = ({ slides = DEFAULT_HERO_SLIDES, autoPlayInterval = 6000 }) =
                       key={dotIdx}
                       onClick={() => goToSlide(dotIdx)}
                       className={`h-2.5 rounded-full transition-all duration-300 ${dotIdx === currentIndex
-                          ? "w-8 sm:w-10 bg-white shadow-md"
-                          : "w-2.5 bg-white/40 hover:bg-white/70 backdrop-blur-xs"
+                        ? "w-8 sm:w-10 bg-white shadow-md"
+                        : "w-2.5 bg-white/40 hover:bg-white/70 backdrop-blur-xs"
                         }`}
                       aria-label={`Go to slide ${dotIdx + 1}`}
                     />

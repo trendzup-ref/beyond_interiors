@@ -191,34 +191,7 @@ const CustomerAccount = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 font-sans text-stone-900 flex flex-col">
-      {/* ================= NAVIGATION BAR ================= */}
-      <nav className="bg-white border-b border-stone-200 sticky top-0 z-40 px-4 sm:px-8 py-3.5 shadow-xs">
-        <div className="max-w-[1520px] mx-auto flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 text-xs font-semibold text-stone-600 hover:text-stone-950 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Storefront</span>
-          </Link>
-
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shadow-xs">
-              <Compass className="w-4 h-4" />
-            </div>
-            <span className="font-serif font-bold text-sm tracking-wider text-stone-900">
-              BEYOND INTERIORS
-            </span>
-          </Link>
-
-          <button
-            onClick={logout}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 transition-colors cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </nav>
-
+    <div className="bg-stone-100 font-sans text-stone-900 flex flex-col flex-1">
       {/* ================= MAIN CONTAINER ================= */}
       <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6 flex-1">
         {/* Profile Header Card */}

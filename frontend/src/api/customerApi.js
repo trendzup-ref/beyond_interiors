@@ -1,5 +1,24 @@
 import axios from "axios";
+import axiosClient from "./axiosClient.js";
 
+/**
+ * Customer Management APIs for Beyond Interiors (Admin)
+ */
+export const getCustomers = async (params) => {
+  return await axiosClient.get("/admin/customers", { params });
+};
+
+export const getCustomer = async (id) => {
+  return await axiosClient.get(`/admin/customers/${id}`);
+};
+
+export const updateCustomerStatus = async (id, status) => {
+  return await axiosClient.patch(`/admin/customers/${id}/status`, { status });
+};
+
+/**
+ * Public Customer Storefront APIs (Installations, Tracking, Support)
+ */
 const API_BASE = "/api/public";
 
 export const getInstallationServices = async () => {
@@ -26,4 +45,15 @@ export const trackInstallation = async (bookingNumber) => {
 
 export const submitSupportTicket = async (ticketData) => {
   return await axios.post(`${API_BASE}/support/ticket`, ticketData);
+};
+
+export default {
+  getCustomers,
+  getCustomer,
+  updateCustomerStatus,
+  getInstallationServices,
+  bookInstallationService,
+  trackOrder,
+  trackInstallation,
+  submitSupportTicket,
 };

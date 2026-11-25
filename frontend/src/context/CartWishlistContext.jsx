@@ -109,7 +109,6 @@ export const CartWishlistProvider = ({ children }) => {
     });
 
     showToast(`"${product.name}" added to your cart.`);
-    setIsCartOpen(true);
   };
 
   const updateQuantity = (cartItemId, deltaOrValue) => {

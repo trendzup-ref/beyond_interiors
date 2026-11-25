@@ -26,45 +26,7 @@ const WishlistPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 font-sans text-stone-900 flex flex-col">
-      {/* Top Navigation Bar */}
-      <nav className="bg-white border-b border-stone-200 sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3.5 shadow-xs">
-        <div className="max-w-[1520px] mx-auto flex items-center justify-between">
-          <Link
-            to="/products"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-stone-600 hover:text-stone-950 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Catalog</span>
-          </Link>
-
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shadow-xs">
-              <Compass className="w-4 h-4" />
-            </div>
-            <span className="font-serif text-sm font-bold tracking-wider text-stone-900">
-              BEYOND INTERIORS
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to="/cart"
-              className="p-2 rounded-full hover:bg-stone-100 text-stone-600 transition-colors"
-              title="Shopping Bag"
-            >
-              <ShoppingBag className="w-4 h-4" />
-            </Link>
-            <Link
-              to="/account"
-              className="px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-stone-800 transition-colors"
-            >
-              Account
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    <div className="bg-stone-50 font-sans text-stone-900 flex flex-col flex-1">
       {/* Main Container */}
       <main className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1">
         {/* Header */}

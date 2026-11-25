@@ -103,17 +103,11 @@ const RoomSection = () => {
   };
 
   return (
-    <section className="w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 bg-[#F6F3EE] rounded-3xl sm:rounded-[40px] my-10 border border-stone-200/70 overflow-hidden shadow-xs">
+    <section className="w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 my-10 overflow-hidden">
       {/* ================= TOP EDITORIAL HEADER (Reference Exact Match) ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12 sm:mb-16">
         {/* Top-Left: Large Bold Uppercase Editorial Headline */}
         <div className="lg:col-span-7">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-amber-700" />
-            <span className="text-[11px] font-mono font-semibold tracking-widest uppercase text-amber-800">
-              COMPLETE LIVING CONCEPTS
-            </span>
-          </div>
           <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold uppercase tracking-tight text-stone-900 leading-[1.08]">
             CURATE YOUR <br />
             SANCTUARY ROOM <br />
@@ -130,16 +124,7 @@ const RoomSection = () => {
             professional on-site measurement, site visits, and end-to-end installation.
           </p>
 
-          <div className="flex items-center justify-between pt-2 border-t border-stone-300/60">
-            <div className="text-xs font-mono font-semibold text-stone-500 tracking-wider">
-              <span className="text-stone-950 font-bold text-sm">0{activeIndex + 1}</span>
-              <span className="mx-1.5 text-stone-400">/</span>
-              <span>0{totalRooms}</span>
-              <span className="ml-3 uppercase text-[10px] text-stone-400 font-sans tracking-widest hidden sm:inline">
-                {activeRoom.tagline}
-              </span>
-            </div>
-
+          <div className="flex items-center justify-between">
             {/* Navigation Arrows */}
             <div className="flex items-center gap-2.5">
               <button

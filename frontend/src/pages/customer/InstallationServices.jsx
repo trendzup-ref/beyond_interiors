@@ -263,81 +263,10 @@ const InstallationServices = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 font-sans text-stone-900 flex flex-col">
-      {/* Top Navbar */}
-      <nav className="bg-white border-b border-stone-200 sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3.5 shadow-xs">
-        <div className="max-w-[1520px] mx-auto flex items-center justify-between">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-stone-600 hover:text-stone-950 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Storefront Home</span>
-          </Link>
-
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shadow-xs">
-              <Compass className="w-4 h-4" />
-            </div>
-            <span className="font-serif text-sm font-bold tracking-wider text-stone-900">
-              BEYOND INTERIORS
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-3 text-xs font-semibold text-stone-600">
-            <Link to="/products" className="hover:text-stone-900">Catalog</Link>
-            <Link to="/track" className="hover:text-stone-900">Track Orders</Link>
-            <Link
-              to="/account"
-              className="px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 transition-colors"
-            >
-              Account
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    <div className="bg-stone-50 font-sans text-stone-900 flex flex-col flex-1">
       {/* Main Container */}
       <main className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1 space-y-10">
         {/* Header Hero Banner */}
-        <div className="relative rounded-3xl bg-stone-900 text-white p-8 sm:p-14 overflow-hidden shadow-xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-900/90 to-transparent z-10" />
-          <img
-            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80"
-            alt="Beyond Interiors Installation"
-            className="absolute inset-0 w-full h-full object-cover opacity-35 object-center"
-          />
-
-          <div className="relative z-20 max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-mono uppercase tracking-wider">
-              <Wrench className="w-3.5 h-3.5" />
-              <span>Certified White-Glove Installation Network</span>
-            </div>
-
-            <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white leading-tight">
-              Bespoke Interior Installation & Architectural Rigging
-            </h1>
-
-            <p className="text-sm sm:text-base text-stone-300 leading-relaxed font-light">
-              Eliminate the stress of third-party handymen. Our in-house certified specialists ensure flawless torque assembly, laser plumb alignment, and zero-defect installation for all interior products.
-            </p>
-
-            <div className="pt-2 flex flex-wrap gap-4 text-xs font-mono text-stone-300">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                Verified & Insured Tradesmen
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                Post-Work Clean Handover
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-sky-400" />
-                Flexible 4-Hour Time Windows
-              </span>
-            </div>
-          </div>
-        </div>
 
         {/* Category Filter Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -345,11 +274,10 @@ const InstallationServices = () => {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                selectedCategory === cat
+              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${selectedCategory === cat
                   ? "bg-stone-900 text-white shadow-xs"
                   : "bg-white text-stone-600 hover:bg-stone-200 border border-stone-200"
-              }`}
+                }`}
             >
               {cat}
             </button>

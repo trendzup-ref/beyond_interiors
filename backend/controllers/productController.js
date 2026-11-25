@@ -139,7 +139,7 @@ export const getAllProducts = async (req, res, next) => {
       lowStock,
       isFeatured,
       page = 1,
-      limit = 20,
+      limit = 30,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
@@ -150,10 +150,27 @@ export const getAllProducts = async (req, res, next) => {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
         { "variants.sku": { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
       ];
     }
 
-    if (category) filter.category = category;
+    if (category && category !== "All" && category !== "all") {
+      // Check if valid ObjectId or category slug/name
+      if (category.match(/^[0-9a-fA-F]{24}$/)) {
+        filter.category = category;
+      } else {
+        const foundCat = await Category.findOne({
+          $or: [
+            { slug: category.toLowerCase().trim() },
+            { name: { $regex: category.trim(), $options: "i" } },
+          ],
+        });
+        if (foundCat) {
+          filter.category = foundCat._id;
+        }
+      }
+    }
+
     if (subcategory) filter.subcategory = subcategory;
 
     if (status === "active") filter.isActive = true;
@@ -171,7 +188,9 @@ export const getAllProducts = async (req, res, next) => {
       ];
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.max(1, Number(limit) || 30);
+    const skip = (pageNum - 1) * limitNum;
     const sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
 
     const [products, totalCount] = await Promise.all([
@@ -180,18 +199,21 @@ export const getAllProducts = async (req, res, next) => {
         .populate("subcategory", "name slug")
         .sort(sort)
         .skip(skip)
-        .limit(Number(limit))
+        .limit(limitNum)
         .lean(),
       Product.countDocuments(filter),
     ]);
+
+    const hasMore = skip + products.length < totalCount;
 
     return sendSuccess(res, 200, "Products retrieved successfully", {
       products,
       pagination: {
         total: totalCount,
-        page: Number(page),
-        limit: Number(limit),
-        pages: Math.ceil(totalCount / Number(limit)) || 1,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(totalCount / limitNum) || 1,
+        hasMore,
       },
     });
   } catch (error) {

@@ -18,7 +18,6 @@ import { getPublicProduct } from "../../api/productApi.js";
 import { SAMPLE_PRODUCTS } from "./ProductListing.jsx";
 import { useCart, useWishlist } from "../../context/CartWishlistContext.jsx";
 import ProductReviews from "../../components/reviews/ProductReviews.jsx";
-import NotificationBell from "../../components/common/NotificationBell.jsx";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -95,69 +94,11 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     addToCart(product, activeVariant, 1, false);
+    navigate("/cart");
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-stone-900 flex flex-col">
-      {/* ================= TOP NAVIGATION BAR ================= */}
-      <nav className="bg-white border-b border-stone-200 sticky top-0 z-40 px-4 sm:px-6 lg:px-8 py-3.5 shadow-xs">
-        <div className="max-w-[1520px] mx-auto flex items-center justify-between">
-          <Link to="/products" className="inline-flex items-center gap-2 text-xs font-semibold text-stone-600 hover:text-stone-950 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Catalog</span>
-          </Link>
-
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shadow-xs">
-              <Compass className="w-4 h-4" />
-            </div>
-            <span className="font-serif text-sm font-bold tracking-wider text-stone-900">
-              BEYOND INTERIORS
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Wishlist Button */}
-            <Link
-              to="/wishlist"
-              className="relative p-2 rounded-full hover:bg-stone-100 text-stone-600 hover:text-rose-600 transition-colors"
-              title="Saved Wishlist"
-            >
-              <Heart className={`w-4 h-4 ${isWishlisted ? "fill-rose-600 text-rose-600" : ""}`} />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Shopping Bag Button */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="relative p-2 rounded-full hover:bg-stone-100 text-stone-600 hover:text-[#A73D4D] transition-colors cursor-pointer"
-              title="Open Shopping Bag"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#A73D4D] text-white text-[9px] font-bold flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notifications Dropdown */}
-            <NotificationBell />
-
-            <Link
-              to="/account"
-              className="px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-xs font-semibold text-stone-800 transition-colors"
-            >
-              Account
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    <div className="bg-white font-sans text-stone-900 flex flex-col flex-1">
       {/* ================= MAIN SPLIT CONTAINER (Exact Match to Image 2) ================= */}
       <main className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch min-h-[640px] lg:min-h-[750px]">
@@ -397,20 +338,6 @@ const ProductDetail = () => {
         {/* ================= VERIFIED CLIENT REVIEWS SECTION ================= */}
         <ProductReviews productName={product.name} />
       </main>
-
-
-      {/* ================= FOOTER ================= */}
-      <footer className="bg-white border-t border-stone-200 py-8 px-4 sm:px-6 lg:px-8 text-center text-xs text-stone-500 mt-10">
-        <div className="max-w-[1520px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="font-serif font-bold text-stone-900 tracking-wider">BEYOND INTERIORS</p>
-          <p>&copy; {new Date().getFullYear()} Beyond Interiors. All rights reserved.</p>
-          <div className="flex items-center gap-4 text-xs text-stone-400">
-            <Link to="/products" className="hover:text-stone-700">Catalog</Link>
-            <Link to="/shipping-policy" className="hover:text-stone-700">Shipping</Link>
-            <Link to="/return-policy" className="hover:text-stone-700">Returns</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

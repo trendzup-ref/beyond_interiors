@@ -82,13 +82,6 @@ const HowItWorksSection = ({ steps = HOW_IT_WORKS_STEPS }) => {
                 {/* Subtle Ambient Vignette */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent pointer-events-none" />
 
-                {/* Subtle highlight pill at top right of image */}
-                <div className="absolute top-3.5 right-3.5 z-10">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-stone-900 text-[10px] sm:text-[11px] font-mono font-semibold tracking-wider uppercase shadow-xs">
-                    <IconComponent className="w-3 h-3 text-amber-700" />
-                    <span>{item.highlight}</span>
-                  </span>
-                </div>
               </div>
 
               {/* FLOATING OVERLAPPING WHITE CONTENT CARD (Reference Exact Match) */}
