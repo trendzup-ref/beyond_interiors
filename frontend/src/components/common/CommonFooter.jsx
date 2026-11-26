@@ -48,14 +48,15 @@ const CommonFooter = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
           {/* Column 1 (Brand, Monogram & Description) - lg:col-span-4 */}
           <div className="lg:col-span-4 space-y-5">
-            <Link to="/" className="inline-flex items-center gap-2.5 group">
-              {/* Circular Monogram Icon matching reference */}
-              <div className="w-9 h-9 rounded-full bg-[#D4C26B] text-[#1C1211] flex items-center justify-center font-serif font-bold text-lg shadow-md transition-transform duration-200 group-hover:scale-105">
-                B
-              </div>
-              <span className="font-serif text-2xl font-bold tracking-tight text-white">
-                Beyond Interiors.
-              </span>
+            <Link to="/" className="flex items-center gap-2 group">
+              <img
+                src="/Beyond Interiors Luxury Logo.png"
+                alt="Beyond Interiors"
+                className="h-10 sm:h-12 md:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-102"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
             </Link>
 
             <p className="text-xs sm:text-[13px] text-stone-400 font-light leading-relaxed max-w-sm">
@@ -119,13 +120,8 @@ const CommonFooter = () => {
             </h4>
             <ul className="space-y-2.5 text-xs text-stone-400">
               <li>
-                <Link to="/products" className="hover:text-white transition-colors">
+                <Link to="/about" className="hover:text-white transition-colors">
                   About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/products?filter=offers" className="hover:text-white transition-colors">
-                  Blog & Lookbook
                 </Link>
               </li>
               <li>
@@ -164,7 +160,7 @@ const CommonFooter = () => {
               </li>
               <li>
                 <Link to="/support" className="hover:text-white transition-colors">
-                  FAQ & Support
+                  Support
                 </Link>
               </li>
             </ul>
@@ -233,16 +229,10 @@ const CommonFooter = () => {
 
       {/* Bottom Sub-Footer Bar (matching exact reference) */}
       <div className="border-t border-[#2A1D1B] bg-[#160E0D]">
-        <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-400">
+        <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs text-stone-400">
           <p className="text-[11px] sm:text-xs">
             Copyright &copy; {new Date().getFullYear()} Beyond Interiors Design. All Rights Reserved.
           </p>
-
-          <div className="flex items-center gap-2 text-[11px] font-mono text-stone-400 hover:text-stone-200 transition-colors cursor-pointer">
-            <Globe className="w-3.5 h-3.5 text-[#D4C26B]" />
-            <span>English (IN) &nbsp;|&nbsp; INR (&#8377;)</span>
-            <ChevronDown className="w-3 h-3 text-stone-500" />
-          </div>
         </div>
       </div>
     </footer>

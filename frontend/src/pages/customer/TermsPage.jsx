@@ -116,8 +116,8 @@ const TermsPage = () => {
                     key={sec.id}
                     onClick={() => scrollTo(sec.id)}
                     className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all ${isActive
-                        ? "bg-stone-900 text-white shadow-xs"
-                        : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
+                      ? "bg-stone-900 text-white shadow-xs"
+                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
                       }`}
                   >
                     <Icon className={`w-4 h-4 ${isActive ? "text-amber-400" : "text-stone-400"}`} />

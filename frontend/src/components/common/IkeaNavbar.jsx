@@ -168,7 +168,7 @@ const IkeaNavbar = () => {
             <img
               src="/Beyond Interiors Luxury Logo.png"
               alt="Beyond Interiors"
-              className="h-8 sm:h-9 md:h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-102"
+              className="h-7 sm:h-8 md:h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-102"
               onError={(e) => {
                 e.target.style.display = "none";
               }}
@@ -180,31 +180,28 @@ const IkeaNavbar = () => {
         <nav className="hidden xl:flex items-center gap-6 text-xs sm:text-[13px] font-semibold text-stone-700 shrink-0">
           <Link
             to="/products"
-            className={`hover:text-stone-950 transition-colors py-1 ${
-              location.pathname === "/products" && !activeCategory ? "text-stone-950 font-bold" : ""
-            }`}
+            className={`hover:text-stone-950 transition-colors py-1 ${location.pathname === "/products" && !activeCategory ? "text-stone-950 font-bold" : ""
+              }`}
           >
             Products
           </Link>
           <a
-            href="/#about"
+            href="/about"
             className="hover:text-stone-950 transition-colors py-1"
           >
             About
           </a>
           <Link
             to="/support"
-            className={`hover:text-stone-950 transition-colors py-1 ${
-              location.pathname === "/support" ? "text-stone-950 font-bold" : ""
-            }`}
+            className={`hover:text-stone-950 transition-colors py-1 ${location.pathname === "/support" ? "text-stone-950 font-bold" : ""
+              }`}
           >
             Support
           </Link>
           <Link
             to="/services"
-            className={`hover:text-stone-950 transition-colors py-1 ${
-              location.pathname === "/services" ? "text-stone-950 font-bold" : ""
-            }`}
+            className={`hover:text-stone-950 transition-colors py-1 ${location.pathname === "/services" ? "text-stone-950 font-bold" : ""
+              }`}
           >
             Installation
           </Link>
@@ -376,11 +373,10 @@ const IkeaNavbar = () => {
             {/* All Products Pill */}
             <Link
               to="/products"
-              className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                location.pathname === "/products" && !activeCategory
-                  ? "bg-stone-900 text-white shadow-xs"
-                  : "bg-stone-100 hover:bg-stone-200 text-stone-800"
-              }`}
+              className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${location.pathname === "/products" && !activeCategory
+                ? "bg-stone-900 text-white shadow-xs"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-800"
+                }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               <span>All Categories</span>
@@ -393,11 +389,10 @@ const IkeaNavbar = () => {
                 <Link
                   key={cat.id}
                   to={`/products?category=${cat.categoryParam}`}
-                  className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all group ${
-                    isSelected
-                      ? "bg-stone-900 text-white shadow-xs"
-                      : "bg-[#F5F5F5] hover:bg-[#EAEAEA] text-stone-800"
-                  }`}
+                  className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all group ${isSelected
+                    ? "bg-stone-900 text-white shadow-xs"
+                    : "bg-[#F5F5F5] hover:bg-[#EAEAEA] text-stone-800"
+                    }`}
                 >
                   <img
                     src={cat.image}

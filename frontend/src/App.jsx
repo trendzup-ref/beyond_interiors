@@ -7,6 +7,7 @@ import CustomerLayout from "./components/layout/CustomerLayout.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import CustomerHome from "./pages/customer/CustomerHome.jsx";
+import AboutPage from "./pages/customer/About.jsx"
 import CustomerAccount from "./pages/customer/CustomerAccount.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import CategoryList from "./pages/admin/CategoryList.jsx";
@@ -72,6 +73,7 @@ function App() {
                 <Route path="/my-orders" element={<OrderTracking />} />
 
                 {/* Concierge Help, Tickets & Support */}
+                <Route path="/about" element={<AboutPage />} />
                 <Route path="/support" element={<SupportPage />} />
                 <Route path="/help" element={<Navigate to="/support" replace />} />
                 <Route path="/contact" element={<Navigate to="/support" replace />} />

@@ -1,25 +1,118 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { motion } from "motion/react";
 import {
-  ShoppingBag,
   Trash2,
   Plus,
   Minus,
   Heart,
   ArrowRight,
-  ArrowLeft,
   Wrench,
   Truck,
-  ShieldCheck,
   CheckCircle,
-  Compass,
   Tag,
-  CreditCard,
-  Building,
-  Info,
 } from "lucide-react";
 import { useCart, useWishlist } from "../../context/CartWishlistContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
+
+// 5 Interior Cards — Fruit Ninja style bottom-toss arc trajectories
+const TOSS_CARDS = [
+  {
+    id: 1,
+    label: "Modular Kitchens",
+    image:
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=700&q=80",
+    startX: -140,
+    midX: -45,
+    finalX: -16,
+    peakY: -95,
+    finalY: -12,
+    startRotate: -42,
+    midRotate: -16,
+    finalRotate: -7,
+    delay: 0.1,
+  },
+  {
+    id: 2,
+    label: "Designer Lighting",
+    image:
+      "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=700&q=80",
+    startX: 150,
+    midX: 50,
+    finalX: 16,
+    peakY: -105,
+    finalY: -6,
+    startRotate: 45,
+    midRotate: 18,
+    finalRotate: 6,
+    delay: 0.42,
+  },
+  {
+    id: 3,
+    label: "Wall Panels & Décor",
+    image:
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=700&q=80",
+    startX: -110,
+    midX: -25,
+    finalX: -10,
+    peakY: -110,
+    finalY: 6,
+    startRotate: -36,
+    midRotate: -10,
+    finalRotate: -4,
+    delay: 0.74,
+  },
+  {
+    id: 4,
+    label: "Rugs & Flooring",
+    image:
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=700&q=80",
+    startX: 120,
+    midX: 30,
+    finalX: 10,
+    peakY: -100,
+    finalY: 12,
+    startRotate: 38,
+    midRotate: 12,
+    finalRotate: 4.5,
+    delay: 1.06,
+  },
+  {
+    id: 5,
+    label: "Curated Living",
+    image:
+      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=700&q=80",
+    startX: -20,
+    midX: 0,
+    finalX: 0,
+    peakY: -120,
+    finalY: 4,
+    startRotate: -24,
+    midRotate: -6,
+    finalRotate: -2,
+    delay: 1.38,
+  },
+];
+
+// Deterministic dust particles settling after all 5 cards land
+const DUST_PARTICLES = [
+  { id: 1, x: "18%", y: "22%", size: 4, delay: 2.35, duration: 2.2 },
+  { id: 2, x: "32%", y: "16%", size: 3, delay: 2.5, duration: 2.4 },
+  { id: 3, x: "48%", y: "28%", size: 5, delay: 2.3, duration: 2.6 },
+  { id: 4, x: "66%", y: "20%", size: 3, delay: 2.6, duration: 2.1 },
+  { id: 5, x: "78%", y: "34%", size: 4, delay: 2.45, duration: 2.5 },
+  { id: 6, x: "24%", y: "44%", size: 3, delay: 2.65, duration: 2.3 },
+  { id: 7, x: "42%", y: "50%", size: 6, delay: 2.4, duration: 2.7 },
+  { id: 8, x: "58%", y: "46%", size: 3, delay: 2.75, duration: 2.0 },
+  { id: 9, x: "74%", y: "58%", size: 5, delay: 2.55, duration: 2.4 },
+  { id: 10, x: "28%", y: "68%", size: 4, delay: 2.7, duration: 2.2 },
+  { id: 11, x: "52%", y: "72%", size: 3, delay: 2.45, duration: 2.5 },
+  { id: 12, x: "68%", y: "78%", size: 4, delay: 2.8, duration: 2.1 },
+  { id: 13, x: "38%", y: "82%", size: 5, delay: 2.6, duration: 2.6 },
+  { id: 14, x: "82%", y: "70%", size: 3, delay: 2.85, duration: 2.2 },
+  { id: 15, x: "15%", y: "58%", size: 4, delay: 2.5, duration: 2.4 },
+  { id: 16, x: "60%", y: "32%", size: 3, delay: 2.7, duration: 2.3 },
+];
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -31,14 +124,13 @@ const CartPage = () => {
     installationTotal,
     shippingAmount,
     shippingThreshold,
-    taxAmount,
     grandTotal,
     updateQuantity,
     toggleInstallation,
     removeFromCart,
     clearCart,
   } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { toggleWishlist } = useWishlist();
 
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
@@ -65,7 +157,9 @@ const CartPage = () => {
       setDiscountAmount(discount);
       setPromoApplied(true);
     } else {
-      setPromoError("Invalid code. Try 'BEYOND10' for 10% architectural discount.");
+      setPromoError(
+        "Invalid code. Try 'BEYOND10' for 10% architectural discount."
+      );
     }
   };
 
@@ -135,61 +229,159 @@ const CartPage = () => {
       {/* Main Container */}
       <main className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1">
         {/* Header Breadcrumb */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200 pb-6">
-          <div>
-            <div className="inline-flex items-center gap-2 mb-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-600" />
-              <span className="text-[11px] font-mono font-semibold tracking-widest uppercase text-stone-500">
-                CHECKOUT PROCESS · STEP 1 OF 2
-              </span>
+        {cartItems.length > 0 && (
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6">
+            <div>
+              <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-stone-900">
+                Your Shopping Bag
+              </h1>
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-stone-900">
-              Your Shopping Bag
-            </h1>
-          </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono text-stone-500">
-            <span>{cartCount} CURATED PIECES</span>
-            {cartItems.length > 0 && (
+            <div className="flex items-center gap-4 text-xs font-mono text-stone-500">
+              <span>{cartCount} Products in Cart</span>
               <button
                 onClick={clearCart}
-                className="text-stone-400 hover:text-rose-600 underline transition-colors"
+                className="text-primary underline hover:text-rose-600 transition-colors cursor-pointer"
               >
                 Clear All
               </button>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {cartItems.length === 0 ? (
-          /* Empty Bag State */
-          <div className="bg-white rounded-3xl border border-stone-200 p-12 text-center max-w-xl mx-auto space-y-5 my-8 shadow-xs">
-            <div className="w-20 h-20 rounded-2xl bg-stone-100 text-stone-400 flex items-center justify-center mx-auto">
-              <ShoppingBag className="w-10 h-10" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="font-serif text-2xl font-bold text-stone-900">
-                Your Shopping Bag is Empty
-              </h2>
-              <p className="text-sm text-stone-500 leading-relaxed max-w-sm mx-auto">
-                Begin curating your living spaces with our bespoke handcrafted seating, designer lighting, and architectural interior solutions.
-              </p>
-            </div>
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                to="/products"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-stone-900 hover:bg-[#A73D4D] text-white font-semibold text-xs tracking-wider uppercase shadow-md transition-all duration-200"
+          /* Animated Empty Bag State: Fruit-Ninja Bottom Toss Cards + Settling Dust */
+          <section className="py-8 sm:py-14 overflow-hidden">
+            <div className="max-w-5xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+              {/* LEFT: Tossed Photo Cards Stack + Dust */}
+              <div className="lg:col-span-6 flex flex-col items-center">
+                <div className="relative w-[290px] sm:w-[350px] h-[360px] sm:h-[420px] flex items-center justify-center">
+                  {TOSS_CARDS.map((card, index) => (
+                    <motion.div
+                      key={card.id}
+                      initial={{
+                        x: card.startX,
+                        y: 440,
+                        rotate: card.startRotate,
+                        scale: 0.72,
+                        opacity: 0,
+                      }}
+                      animate={{
+                        x: [card.startX, card.midX, card.finalX],
+                        y: [440, card.peakY, card.finalY],
+                        rotate: [
+                          card.startRotate,
+                          card.midRotate,
+                          card.finalRotate,
+                        ],
+                        scale: [0.72, 1.05, 1],
+                        opacity: [0, 1, 1],
+                      }}
+                      transition={{
+                        duration: 0.9,
+                        delay: card.delay,
+                        times: [0, 0.58, 1],
+                        ease: ["easeOut", "easeInOut"],
+                      }}
+                      style={{ zIndex: index + 1 }}
+                      className="absolute w-[230px] sm:w-[275px] h-[290px] sm:h-[345px] bg-[#FAF8F5] p-3 pb-8 shadow-xl border border-[#E5DDD3]"
+                    >
+                      <div className="w-full h-full overflow-hidden bg-[#EDE6DC]">
+                        <img
+                          src={card.image}
+                          alt={card.label}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[#7D7165] text-center font-medium">
+                        {card.label}
+                      </p>
+                    </motion.div>
+                  ))}
+
+                  {/* Dust Phase 1: Settled Matte Dusty Layer over the stack */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1.8, delay: 2.35, ease: "easeOut" }}
+                    className="pointer-events-none absolute inset-4 rounded-sm"
+                    style={{
+                      zIndex: 8,
+                      background:
+                        "radial-gradient(circle at 45% 40%, rgba(235, 227, 215, 0.34) 0%, rgba(210, 198, 182, 0.48) 65%, rgba(190, 178, 162, 0.25) 100%)",
+                      backdropFilter: "saturate(0.75) contrast(0.95)",
+                    }}
+                    aria-hidden="true"
+                  />
+
+                  {/* Dust Phase 2: Fine Dust Motes Drifting Down */}
+                  <div
+                    className="pointer-events-none absolute inset-0 overflow-hidden"
+                    style={{ zIndex: 9 }}
+                    aria-hidden="true"
+                  >
+                    {DUST_PARTICLES.map((p) => (
+                      <motion.span
+                        key={p.id}
+                        initial={{ y: -90, x: -12, opacity: 0, scale: 0.4 }}
+                        animate={{
+                          y: 0,
+                          x: 0,
+                          opacity: [0, 0.85, 0.65],
+                          scale: 1,
+                        }}
+                        transition={{
+                          duration: p.duration,
+                          delay: p.delay,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        style={{
+                          left: p.x,
+                          top: p.y,
+                          width: p.size,
+                          height: p.size,
+                        }}
+                        className="absolute rounded-full bg-[#E8DFD3] shadow-[0_0_6px_rgba(245,238,228,0.9)]"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT: Editorial Copy & CTAs */}
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                className="lg:col-span-6 text-center lg:text-left max-w-md mx-auto lg:mx-0"
               >
-                Explore Product Catalog
-              </Link>
-              <Link
-                to="/wishlist"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs transition-colors"
-              >
-                View Saved Wishlist
-              </Link>
+                <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A1714] leading-tight mb-4">
+                  Your bag is gathering dust.
+                </h2>
+                <p className="text-sm sm:text-base text-stone-600 leading-relaxed mb-8">
+                  Begin curating your living spaces with our bespoke handcrafted
+                  seating, designer lighting, wall panels, and architectural
+                  interior solutions—backed by white-glove installation.
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3">
+                  <Link
+                    to="/products"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#2C241E] hover:bg-[#3E3228] text-[#FAF8F5] text-xs font-semibold uppercase tracking-[0.16em] px-8 py-4 transition-colors"
+                  >
+                    <span>Explore Product Catalog</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    to="/wishlist"
+                    className="w-full sm:w-auto inline-flex items-center justify-center border border-[#2C241E] text-[#2C241E] hover:bg-[#2C241E] hover:text-[#FAF8F5] text-xs font-semibold uppercase tracking-[0.16em] px-7 py-4 transition-colors"
+                  >
+                    View Saved Wishlist
+                  </Link>
+                </div>
+              </motion.div>
             </div>
-          </div>
+          </section>
         ) : (
           /* Two-Column Bag Layout */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
@@ -220,7 +412,10 @@ const CartPage = () => {
                     <span className="font-mono text-stone-500 text-[11px]">
                       {remainingForFreeShipping === 0
                         ? "100%"
-                        : `${Math.min(100, Math.round((cartSubtotal / shippingThreshold) * 100))}%`}
+                        : `${Math.min(
+                          100,
+                          Math.round((cartSubtotal / shippingThreshold) * 100)
+                        )}%`}
                     </span>
                   </div>
                   <div className="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
@@ -240,7 +435,10 @@ const CartPage = () => {
               {/* Items Card */}
               <div className="bg-white rounded-3xl border border-stone-200 shadow-xs divide-y divide-stone-100 overflow-hidden">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="p-5 sm:p-6 space-y-4 hover:bg-stone-50/50 transition-colors">
+                  <div
+                    key={item.id}
+                    className="p-5 sm:p-6 space-y-4 hover:bg-stone-50/50 transition-colors"
+                  >
                     <div className="flex flex-col sm:flex-row gap-5">
                       {/* Product Image */}
                       <div className="w-full sm:w-28 h-28 rounded-2xl bg-stone-100 border border-stone-200/80 overflow-hidden shrink-0 flex items-center justify-center p-2">
@@ -268,7 +466,10 @@ const CartPage = () => {
 
                           <div className="text-right">
                             <span className="font-serif text-xl font-bold text-stone-900 block">
-                              ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                              ₹
+                              {(item.price * item.quantity).toLocaleString(
+                                "en-IN"
+                              )}
                             </span>
                             {item.quantity > 1 && (
                               <span className="text-xs text-stone-400 font-mono">
@@ -352,12 +553,16 @@ const CartPage = () => {
                             Turnkey Certified Installation & Assembly
                           </span>
                           <span className="text-stone-500 block text-[11px]">
-                            Certified Beyond Interiors technician will assemble and position this product.
+                            Certified Beyond Interiors technician will assemble
+                            and position this product.
                           </span>
                         </div>
                       </label>
                       <span className="font-mono text-xs font-semibold text-stone-800 shrink-0 ml-4">
-                        +₹{(item.installationFee * item.quantity).toLocaleString("en-IN")}
+                        +₹
+                        {(item.installationFee * item.quantity).toLocaleString(
+                          "en-IN"
+                        )}
                       </span>
                     </div>
                   </div>
@@ -365,52 +570,56 @@ const CartPage = () => {
               </div>
 
               {/* Delivery Address Selection Card (If Authenticated) */}
-              {isAuthenticated && user?.addresses && user.addresses.length > 0 && (
-                <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-lg font-bold text-stone-900">
-                      Select Delivery Address
-                    </h3>
-                    <Link
-                      to="/account"
-                      className="text-xs text-[#A73D4D] font-semibold hover:underline"
-                    >
-                      Manage Addresses
-                    </Link>
-                  </div>
+              {isAuthenticated &&
+                user?.addresses &&
+                user.addresses.length > 0 && (
+                  <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-serif text-lg font-bold text-stone-900">
+                        Select Delivery Address
+                      </h3>
+                      <Link
+                        to="/account"
+                        className="text-xs text-[#A73D4D] font-semibold hover:underline"
+                      >
+                        Manage Addresses
+                      </Link>
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {user.addresses.map((addr, idx) => (
-                      <div
-                        key={addr._id || idx}
-                        onClick={() => setSelectedAddressIndex(idx)}
-                        className={`p-4 rounded-2xl border text-xs cursor-pointer transition-all ${
-                          selectedAddressIndex === idx
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {user.addresses.map((addr, idx) => (
+                        <div
+                          key={addr._id || idx}
+                          onClick={() => setSelectedAddressIndex(idx)}
+                          className={`p-4 rounded-2xl border text-xs cursor-pointer transition-all ${selectedAddressIndex === idx
                             ? "border-[#A73D4D] bg-[#A73D4D]/5 ring-1 ring-[#A73D4D]"
                             : "border-stone-200 hover:border-stone-300 bg-white"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between font-semibold text-stone-900 mb-1">
-                          <span>{addr.fullName}</span>
-                          {selectedAddressIndex === idx && (
-                            <CheckCircle className="w-4 h-4 text-[#A73D4D]" />
-                          )}
+                            }`}
+                        >
+                          <div className="flex items-center justify-between font-semibold text-stone-900 mb-1">
+                            <span>{addr.fullName}</span>
+                            {selectedAddressIndex === idx && (
+                              <CheckCircle className="w-4 h-4 text-[#A73D4D]" />
+                            )}
+                          </div>
+                          <p className="text-stone-600 line-clamp-2">
+                            {addr.street},{" "}
+                            {addr.landmark ? `${addr.landmark}, ` : ""}
+                            {addr.city}, {addr.state} - {addr.pinCode}
+                          </p>
+                          <p className="text-stone-400 font-mono mt-1 text-[11px]">
+                            Phone: {addr.phone}
+                          </p>
                         </div>
-                        <p className="text-stone-600 line-clamp-2">
-                          {addr.street}, {addr.landmark ? `${addr.landmark}, ` : ""}{addr.city},{" "}
-                          {addr.state} - {addr.pinCode}
-                        </p>
-                        <p className="text-stone-400 font-mono mt-1 text-[11px]">Phone: {addr.phone}</p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
 
             {/* Right Column: Order Summary Card (Sticky) */}
-            <div className="lg:col-span-4 space-y-6">
-              <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-7 shadow-xs sticky top-20 space-y-6">
+            <div className="lg:col-span-4 lg:sticky lg:top-36 space-y-6">
+              <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-7 shadow-xs space-y-6">
                 <h2 className="font-serif text-xl font-bold text-stone-900 pb-3 border-b border-stone-100">
                   Order Summary
                 </h2>
@@ -452,7 +661,9 @@ const CartPage = () => {
                       Architectural discount applied successfully!
                     </p>
                   )}
-                  {promoError && <p className="text-[11px] text-rose-600">{promoError}</p>}
+                  {promoError && (
+                    <p className="text-[11px] text-rose-600">{promoError}</p>
+                  )}
                 </form>
 
                 {/* Breakdown */}
@@ -508,8 +719,12 @@ const CartPage = () => {
 
                   <div className="pt-4 border-t border-stone-200 flex justify-between items-baseline text-stone-900">
                     <div>
-                      <span className="font-serif font-bold text-base block">Total Payable</span>
-                      <span className="text-[10px] text-stone-400">All Taxes & Duties Included</span>
+                      <span className="font-serif font-bold text-base block">
+                        Total Payable
+                      </span>
+                      <span className="text-[10px] text-stone-400">
+                        All Taxes & Duties Included
+                      </span>
                     </div>
                     <span className="font-serif font-bold text-2xl text-stone-950">
                       ₹{finalPayable.toLocaleString("en-IN")}
@@ -528,24 +743,14 @@ const CartPage = () => {
                   ) : (
                     <>
                       <span>
-                        {isAuthenticated ? "Confirm & Place Order" : "Sign In to Checkout"}
+                        {isAuthenticated
+                          ? "Confirm & Place Order"
+                          : "Sign In to Checkout"}
                       </span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
-
-                {/* Trust Badges */}
-                <div className="pt-2 border-t border-stone-100 space-y-2 text-[11px] text-stone-500">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Official Beyond Interiors Certificate of Authenticity</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4 text-amber-700 shrink-0" />
-                    <span>Direct Bank Transfer (NEFT/RTGS/UPI) with Verified Invoice</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -564,7 +769,8 @@ const CartPage = () => {
                 Order Registered Successfully!
               </h2>
               <p className="text-xs text-stone-500">
-                Thank you for choosing Beyond Interiors. Your order confirmation and proforma invoice have been generated.
+                Thank you for choosing Beyond Interiors. Your order confirmation
+                and proforma invoice have been generated.
               </p>
             </div>
 
@@ -577,7 +783,9 @@ const CartPage = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-500">Placed On</span>
-                <span className="text-stone-800">{placedOrderDetails.createdAt}</span>
+                <span className="text-stone-800">
+                  {placedOrderDetails.createdAt}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-500">Total Amount</span>
@@ -588,26 +796,9 @@ const CartPage = () => {
               <div className="flex justify-between">
                 <span className="text-stone-500">Delivery Address</span>
                 <span className="text-stone-800 font-medium text-right max-w-[200px] truncate">
-                  {placedOrderDetails.address.city}, {placedOrderDetails.address.state}
+                  {placedOrderDetails.address.city},{" "}
+                  {placedOrderDetails.address.state}
                 </span>
-              </div>
-            </div>
-
-            {/* Offline Bank Transfer Details */}
-            <div className="bg-amber-50/70 rounded-2xl p-4 border border-amber-200/80 space-y-2 text-xs text-stone-700">
-              <div className="flex items-center gap-2 font-semibold text-amber-900">
-                <CreditCard className="w-4 h-4 text-amber-700" />
-                <span>Next Step: Offline Bank Transfer / RTGS / UPI</span>
-              </div>
-              <p className="text-[11px] text-stone-600 leading-relaxed">
-                Please transfer the invoice total using your order number{" "}
-                <strong>{placedOrderDetails.orderNumber}</strong> as the transaction remark:
-              </p>
-              <div className="font-mono text-[11px] bg-white/80 p-2.5 rounded-lg border border-amber-200 space-y-1">
-                <div>Bank: <strong>HDFC Bank Ltd.</strong></div>
-                <div>Account Name: <strong>BEYOND INTERIORS PVT LTD</strong></div>
-                <div>A/C Number: <strong>50200088991234</strong></div>
-                <div>IFSC Code: <strong>HDFC0001234</strong></div>
               </div>
             </div>
 

@@ -87,7 +87,12 @@ const FaqSection = ({ faqs = FAQ_ITEMS, className = "" }) => {
                   className="w-full text-left py-2.5 flex items-center justify-between gap-4 transition-colors cursor-pointer group focus:outline-none"
                   aria-expanded={isOpen}
                 >
-                  <span className="font-sans text-base sm:text-lg font-medium text-[#C0623A] group-hover:opacity-85 transition-opacity">
+                  <span
+                    className={`font-sans text-base sm:text-lg font-medium transition-colors ${isOpen
+                        ? "text-[#C0623A]"
+                        : "text-black"
+                      }`}
+                  >
                     {faq.question}
                   </span>
 

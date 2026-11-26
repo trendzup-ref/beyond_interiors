@@ -27,7 +27,14 @@
         color: #1c1917;
     }
 
-    h1, h2, h3, h4, h5, h6, .font-heading, .font-serif {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .font-heading,
+    .font-serif {
         font-family: var(--font-heading);
     }
 }
@@ -38,6 +45,7 @@
     color: #ffffff;
     transition: all 0.2s ease-in-out;
 }
+
 .btn-primary:hover {
     background-color: #8e3341;
 }
@@ -47,6 +55,7 @@
     color: #1c1917;
     transition: all 0.2s ease-in-out;
 }
+
 .btn-secondary:hover {
     background-color: #c2b059;
 }
@@ -60,4 +69,62 @@
 .badge-accent {
     background-color: var(--color-accent);
     color: #ffffff;
+}
+
+
+/* SHOP BY ROOM CAROUSEL */
+
+.room-carousel-viewport {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 30px 0;
+}
+
+.room-swiper {
+    width: 100%;
+    overflow: visible !important;
+}
+
+.room-swiper .swiper-wrapper {
+    align-items: center;
+}
+
+.room-swiper .room-slide {
+    width: min(72vw, 440px);
+    height: auto;
+    flex-shrink: 0;
+    transition:
+        transform 800ms ease,
+        opacity 800ms ease,
+        filter 800ms ease;
+    transform: scale(0.85);
+    opacity: 0.5;
+    filter: brightness(0.75);
+}
+
+.room-swiper .swiper-slide-active {
+    transform: scale(1);
+    opacity: 1;
+    filter: brightness(1);
+    z-index: 5;
+}
+
+@media (max-width: 640px) {
+    .room-swiper .room-slide {
+        width: 82vw;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .room-swiper .room-slide {
+        width: 65vw;
+    }
+}
+
+/* Prevent page-level horizontal scrolling */
+html,
+body {
+    overflow-x: clip;
 }
