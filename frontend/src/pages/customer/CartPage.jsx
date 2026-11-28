@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import {
@@ -11,9 +11,22 @@ import {
   Truck,
   CheckCircle,
   Tag,
+  MapPin,
+  ShieldCheck,
+  AlertCircle,
+  Info,
+  Banknote,
+  FileText,
+  Clock,
+  Sparkles,
+  ExternalLink,
 } from "lucide-react";
 import { useCart, useWishlist } from "../../context/CartWishlistContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { pincodeService } from "../../services/pincodeService.js";
+import { orderService } from "../../services/orderService.js";
+import { installationService } from "../../services/installationService.js";
+import { notificationService } from "../../services/notificationService.js";
 
 // 5 Interior Cards — Fruit Ninja style bottom-toss arc trajectories
 const TOSS_CARDS = [
@@ -142,6 +155,35 @@ const CartPage = () => {
   const [placedOrderDetails, setPlacedOrderDetails] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Pincode Availability Checker State
+  const [pincodeInput, setPincodeInput] = useState("122002");
+  const [pincodeResult, setPincodeResult] = useState(null);
+  const [pincodeChecking, setPincodeChecking] = useState(false);
+  const [pincodeError, setPincodeError] = useState("");
+
+  // Check pincode availability
+  const checkPincode = async (codeToCheck = pincodeInput) => {
+    setPincodeError("");
+    setPincodeChecking(true);
+    const res = await pincodeService.checkAvailability(codeToCheck);
+    setPincodeChecking(false);
+    setPincodeResult(res);
+    if (!res.available) {
+      setPincodeError(res.message);
+    }
+  };
+
+  // Pre-fill pincode from active delivery address or default
+  useEffect(() => {
+    const activeAddress = user?.addresses?.[selectedAddressIndex];
+    if (activeAddress?.pinCode) {
+      setPincodeInput(activeAddress.pinCode);
+      checkPincode(activeAddress.pinCode);
+    } else {
+      checkPincode("122002");
+    }
+  }, [selectedAddressIndex, user]);
+
   // Promo Code Validation
   const handleApplyPromo = (e) => {
     e.preventDefault();
@@ -184,42 +226,118 @@ const CartPage = () => {
     removeFromCart(item.id);
   };
 
-  // Place Order Simulation
-  const handlePlaceOrder = () => {
+  // Real Order Placement & Data Synchronization with Service Layer
+  const handlePlaceOrder = async () => {
     if (!isAuthenticated) {
       navigate("/login?redirect=/cart");
       return;
     }
 
+    if (pincodeResult && !pincodeResult.available) {
+      setPincodeError("Delivery is unavailable for this PIN code. Please enter a serviceable delivery PIN code to proceed.");
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
-      const orderNumber = `BI-ORD-${Date.now().toString().slice(-6)}`;
-      const orderData = {
-        orderNumber,
-        items: [...cartItems],
-        subtotal: cartSubtotal,
-        discount: discountAmount,
-        installationTotal,
-        shippingAmount,
-        grandTotal: finalPayable,
-        address: user?.addresses?.[selectedAddressIndex] || {
-          fullName: user?.name,
-          phone: user?.phone,
-          city: "Registered Address",
-          state: "India",
-        },
-        createdAt: new Date().toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        }),
+    try {
+      const activeAddress = user?.addresses?.[selectedAddressIndex] || {
+        fullName: user?.name || "Client",
+        phone: user?.phone || "9876543210",
+        street: "Registered Atelier Residence",
+        landmark: "",
+        city: pincodeResult?.city || "Gurugram",
+        state: pincodeResult?.state || "Haryana",
+        pinCode: pincodeInput || "122002",
       };
 
-      setPlacedOrderDetails(orderData);
+      const orderPayload = {
+        customer: {
+          _id: user?._id || "usr-current",
+          name: user?.name || "Client",
+          email: user?.email || "customer@beyondinteriors.in",
+          phone: user?.phone || "9876543210",
+        },
+        items: cartItems.map((item) => ({
+          product: item.productId,
+          variantId: item.sku || "",
+          sku: item.sku || "BI-SKU-01",
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          quantity: item.quantity,
+          subtotal: item.price * item.quantity,
+          includeInstallation: Boolean(item.includeInstallation),
+          installationFee: item.installationFee || 0,
+        })),
+        shippingAddress: activeAddress,
+        offlinePayment: {
+          method: "cash_on_delivery",
+          status: "Payment Pending",
+          notes: "Offline payment will be collected according to team instructions upon delivery.",
+        },
+        subtotal: cartSubtotal,
+        shippingFee: shippingAmount,
+        installationTotal,
+        discount: discountAmount,
+        totalAmount: finalPayable,
+        expectedDeliveryDate: pincodeResult?.estimatedDays
+          ? `Within ${pincodeResult.estimatedDays}`
+          : "Within 4-7 business days",
+      };
+
+      // 1. Create and persist Order
+      const createdOrder = await orderService.createOrder(orderPayload);
+
+      // 2. Automatically create linked Installation records for selected products (without duplicates)
+      const installationPromises = cartItems
+        .filter((item) => item.includeInstallation)
+        .map((item) =>
+          installationService.createInstallation({
+            order: createdOrder.orderNumber,
+            customer: orderPayload.customer,
+            serviceType: `Certified Assembly & Installation for ${item.name}`,
+            product: {
+              _id: item.productId,
+              name: item.name,
+              image: item.image,
+            },
+            address: activeAddress,
+            notes: "Selected during product purchase",
+          })
+        );
+      const createdInstallations = await Promise.all(installationPromises);
+
+      // 3. Generate Notifications in synchronized system
+      await notificationService.createNotification({
+        title: `Order Placed: ${createdOrder.orderNumber}`,
+        message: `Your interior order of ₹${finalPayable.toLocaleString("en-IN")} has been registered under offline payment mode.`,
+        type: "order",
+        link: `/account?tab=orders&id=${createdOrder.orderNumber}`,
+      });
+
+      if (createdInstallations.length > 0) {
+        await notificationService.createNotification({
+          title: `Installation Requested: ${createdInstallations.length} Service(s)`,
+          message: `Linked to Order ${createdOrder.orderNumber}. An installation professional will be assigned to coordinate on-site mounting.`,
+          type: "installation",
+          link: `/account?tab=installations&id=${createdInstallations[0].bookingNumber}`,
+        });
+      }
+
+      // 4. Update details and open modal
+      setPlacedOrderDetails({
+        ...createdOrder,
+        installationsCount: createdInstallations.length,
+        paymentInstructions: "Our concierge team will contact you to coordinate offline payment and material dispatch.",
+      });
+
       setOrderModalOpen(true);
       clearCart();
+    } catch (err) {
+      console.error("Order placement failed:", err);
+    } finally {
       setIsSubmitting(false);
-    }, 1200);
+    }
   };
 
   const remainingForFreeShipping = Math.max(0, shippingThreshold - cartSubtotal);
@@ -579,7 +697,7 @@ const CartPage = () => {
                         Select Delivery Address
                       </h3>
                       <Link
-                        to="/account"
+                        to="/account?tab=profile"
                         className="text-xs text-[#A73D4D] font-semibold hover:underline"
                       >
                         Manage Addresses
@@ -615,6 +733,110 @@ const CartPage = () => {
                     </div>
                   </div>
                 )}
+
+              {/* ================= 1. PINCODE AVAILABILITY CHECKER ================= */}
+              <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#A73D4D] block mb-0.5">
+                      Serviceability & SLA
+                    </span>
+                    <h3 className="font-serif text-lg font-bold text-stone-900">
+                      Delivery & Installation PIN Code
+                    </h3>
+                  </div>
+                  <span className="text-xs text-stone-400 font-mono">India Only</span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <div className="relative flex-1">
+                    <MapPin className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={pincodeInput}
+                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Enter 6-digit delivery PIN code"
+                      className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm font-mono tracking-wider focus:outline-none focus:border-stone-900 focus:bg-white transition-all"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => checkPincode(pincodeInput)}
+                    disabled={pincodeChecking || !pincodeInput}
+                    className="px-6 py-3 rounded-xl bg-stone-900 hover:bg-[#A73D4D] text-white text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer shrink-0 shadow-xs"
+                  >
+                    {pincodeChecking ? "Verifying..." : "Check Availability"}
+                  </button>
+                </div>
+
+                {/* Status Message */}
+                {pincodeResult && (
+                  <div
+                    className={`p-4 rounded-2xl border text-xs transition-all ${pincodeResult.available
+                        ? "bg-emerald-50/80 border-emerald-200 text-emerald-900"
+                        : "bg-red-50/80 border-red-200 text-red-900"
+                      }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      {pincodeResult.available ? (
+                        <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <p className="font-semibold">{pincodeResult.message}</p>
+                        {pincodeResult.available && (
+                          <div className="flex flex-wrap items-center gap-4 mt-2 text-[11px] text-emerald-800">
+                            <span>
+                              City / Hub: <strong>{pincodeResult.city}, {pincodeResult.state}</strong>
+                            </span>
+                            <span>
+                              Estimated Transit: <strong>{pincodeResult.estimatedDays}</strong>
+                            </span>
+                            {pincodeResult.whiteGlove && (
+                              <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
+                                <ShieldCheck className="w-3.5 h-3.5" /> White-Glove Installation Covered
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ================= 2. OFFLINE PAYMENT INSTRUCTIONS ================= */}
+              <div className="bg-white rounded-3xl border border-stone-200 p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#A73D4D] block mb-0.5">
+                      Payment Policy
+                    </span>
+                    <h3 className="font-serif text-lg font-bold text-stone-900">
+                      Offline Payment
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/70">
+                    Payment Pending Upon Delivery
+                  </span>
+                </div>
+
+                {/* Mandatory Offline Payments Notice */}
+                <div className="p-4 rounded-2xl bg-[#FBF9F6] border border-amber-200/80 flex items-start gap-3">
+                  <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5 text-xs text-stone-700 leading-relaxed font-normal">
+                    <p>
+                      <strong className="text-stone-900 font-semibold">BEYOND INTERIORS currently accepts offline payments only.</strong> Your order will be confirmed according to the payment instructions provided by our team.
+                    </p>
+                    <p className="text-stone-600">
+                      Payment must be completed directly through the available offline payment method upon verification and delivery of your interior products and materials.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right Column: Order Summary Card (Sticky) */}
@@ -732,11 +954,30 @@ const CartPage = () => {
                   </div>
                 </div>
 
+                {/* Pincode Availability Warning */}
+                {pincodeResult && !pincodeResult.available && (
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>Please enter a serviceable PIN code to proceed.</span>
+                  </div>
+                )}
+
+                {/* Offline Payment Confirmation Reminder */}
+                <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 text-[11px] text-stone-600 space-y-1">
+                  <div className="flex items-center justify-between font-semibold text-stone-900">
+                    <span>Payment Mode:</span>
+                    <span className="text-[#A73D4D]">Offline Only</span>
+                  </div>
+                  <p className="text-[10px] text-stone-500">
+                    Payment will be collected offline according to team instructions upon delivery.
+                  </p>
+                </div>
+
                 {/* Checkout CTA */}
                 <button
                   onClick={handlePlaceOrder}
-                  disabled={isSubmitting}
-                  className="w-full py-4 rounded-full bg-stone-900 hover:bg-[#A73D4D] text-white font-semibold text-xs tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  disabled={isSubmitting || (pincodeResult && !pincodeResult.available)}
+                  className="w-full py-4 rounded-full bg-stone-900 hover:bg-[#A73D4D] text-white font-semibold text-xs tracking-wider uppercase shadow-md flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -766,11 +1007,10 @@ const CartPage = () => {
                 <CheckCircle className="w-8 h-8" />
               </div>
               <h2 className="font-serif text-2xl font-bold text-stone-900">
-                Order Registered Successfully!
+                Order Placed Successfully!
               </h2>
-              <p className="text-xs text-stone-500">
-                Thank you for choosing Beyond Interiors. Your order confirmation
-                and proforma invoice have been generated.
+              <p className="text-xs text-stone-500 leading-relaxed max-w-sm mx-auto">
+                Thank you for choosing Beyond Interiors. Your order has been registered in our atelier system.
               </p>
             </div>
 
@@ -782,42 +1022,69 @@ const CartPage = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">Placed On</span>
-                <span className="text-stone-800">
-                  {placedOrderDetails.createdAt}
-                </span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-stone-500">Total Amount</span>
                 <span className="font-serif font-bold text-stone-950 text-sm">
-                  ₹{placedOrderDetails.grandTotal.toLocaleString("en-IN")}
+                  ₹{placedOrderDetails.totalAmount?.toLocaleString("en-IN") || placedOrderDetails.grandTotal?.toLocaleString("en-IN")}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">Delivery Address</span>
-                <span className="text-stone-800 font-medium text-right max-w-[200px] truncate">
-                  {placedOrderDetails.address.city},{" "}
-                  {placedOrderDetails.address.state}
+                <span className="text-stone-500">Payment Status</span>
+                <span className="text-amber-800 font-semibold font-mono bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/80 text-[10px]">
+                  Payment Pending (Offline)
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-stone-500">Payment Mode</span>
+                <span className="text-stone-800 font-medium text-right max-w-[220px] truncate">
+                  Offline Payment (Direct Verification)
+                </span>
+              </div>
+              {placedOrderDetails.installationsCount > 0 && (
+                <div className="flex justify-between text-amber-900 pt-1 border-t border-stone-200/60 font-semibold">
+                  <span className="inline-flex items-center gap-1">
+                    <Wrench className="w-3.5 h-3.5 text-amber-700" /> Linked Installations
+                  </span>
+                  <span>{placedOrderDetails.installationsCount} Active Service(s)</span>
+                </div>
+              )}
+            </div>
+
+            {/* Offline Payment Instructions Callout */}
+            <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs text-stone-700 space-y-1">
+              <span className="font-bold text-stone-900 block text-[11px] uppercase tracking-wider">
+                Offline Payment Instructions:
+              </span>
+              <p className="text-[11px] text-stone-600 whitespace-pre-line leading-relaxed">
+                {placedOrderDetails.paymentInstructions ||
+                  "Our team will contact you for payment verification and material dispatch coordination."}
+              </p>
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3">
               <Link
-                to="/account"
+                to={`/account?tab=orders&id=${placedOrderDetails.orderNumber}`}
                 onClick={() => setOrderModalOpen(false)}
                 className="flex-1 py-3 text-center rounded-full bg-stone-900 hover:bg-[#A73D4D] text-white text-xs font-semibold shadow-xs transition-colors"
               >
-                View in My Account
+                Track Order
               </Link>
+              {placedOrderDetails.installationsCount > 0 && (
+                <Link
+                  to={`/account?tab=installations&order=${placedOrderDetails.orderNumber}`}
+                  onClick={() => setOrderModalOpen(false)}
+                  className="flex-1 py-3 text-center rounded-full bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold shadow-xs transition-colors"
+                >
+                  Track Installation
+                </Link>
+              )}
               <button
                 onClick={() => {
                   setOrderModalOpen(false);
                   navigate("/products");
                 }}
-                className="flex-1 py-3 text-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold transition-colors"
+                className="py-3 px-5 text-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold transition-colors cursor-pointer"
               >
-                Back to Catalog
+                Catalog
               </button>
             </div>
           </div>

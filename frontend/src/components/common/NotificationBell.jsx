@@ -136,11 +136,11 @@ const NotificationBell = () => {
           {/* Footer */}
           <div className="p-2.5 bg-stone-50 border-t border-stone-200 flex items-center justify-between text-[11px]">
             <Link
-              to="/track"
+              to="/account?tab=notifications"
               onClick={() => setIsOpen(false)}
-              className="text-stone-600 hover:text-stone-900 font-medium"
+              className="text-stone-600 hover:text-stone-900 font-semibold"
             >
-              Order & Installation Tracker &rarr;
+              View All Notifications &rarr;
             </Link>
             <button
               onClick={clearNotifications}

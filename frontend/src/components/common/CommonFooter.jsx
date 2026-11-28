@@ -42,7 +42,7 @@ const PinterestIcon = () => (
 
 const CommonFooter = () => {
   return (
-    <footer className="w-full bg-[#1C1211] text-stone-300 font-sans mt-auto border-t border-[#2D1E1C]">
+    <footer className="w-full bg-[#1C1211] z-1000 text-stone-300 font-sans mt-auto border-t border-[#2D1E1C]">
       {/* Upper Main Section (5-Column Grid matching reference image) */}
       <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">

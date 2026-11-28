@@ -45,6 +45,26 @@ export const NotificationProvider = ({ children }) => {
   });
 
   useEffect(() => {
+    const handleSync = () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setNotifications(JSON.parse(stored));
+        }
+      } catch (err) {
+        console.error("Failed to sync notifications", err);
+      }
+    };
+
+    window.addEventListener("beyond_notifications_updated", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("beyond_notifications_updated", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
+  }, []);
+
+  useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
     } catch (e) {

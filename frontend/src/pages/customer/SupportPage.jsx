@@ -21,10 +21,7 @@ export default function SupportPage() {
 
         {/* Page Hero Header */}
         <header className="mb-10 sm:mb-14 max-w-3xl">
-          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#A73D4D] font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Dedicated Concierge Desk</span>
-          </div>
+
 
           <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
             We're Here to Help Your Space Evolve
@@ -51,32 +48,6 @@ export default function SupportPage() {
           <LocationMap />
         </div>
 
-        {/* Quick FAQ Reference Banner */}
-        <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-800 flex items-center justify-center shrink-0">
-              <HelpCircle className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-serif text-lg font-bold text-stone-900">
-                Have questions about warranties, returns, or installations?
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-                Browse our comprehensive answers covering warranties, offline payment modes, and nationwide delivery timelines.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to="/#faq"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-stone-900 hover:bg-[#A73D4D] text-white text-xs font-semibold uppercase tracking-wider transition-colors shrink-0 shadow-xs"
-            >
-              <span>Explore FAQs</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
       </div>
     </main>
   );

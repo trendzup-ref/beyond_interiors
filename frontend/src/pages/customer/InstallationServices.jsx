@@ -20,6 +20,8 @@ import {
 import { getInstallationServices, bookInstallationService } from "../../api/customerApi.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useNotifications } from "../../context/NotificationContext.jsx";
+import { installationService } from "../../services/installationService.js";
+import { notificationService } from "../../services/notificationService.js";
 
 const FALLBACK_SERVICES = [
   {
@@ -214,12 +216,18 @@ const InstallationServices = () => {
     setBookingLoading(true);
     try {
       const payload = {
-        customerName: bookingForm.name,
-        customerPhone: bookingForm.phone,
-        customerEmail: bookingForm.email,
+        customer: {
+          name: bookingForm.name,
+          phone: bookingForm.phone,
+          email: bookingForm.email,
+        },
         serviceType: activeService?.title || "Architectural Furniture Assembly",
         preferredDate: bookingForm.preferredDate,
         timeSlot: bookingForm.timeSlot,
+        product: {
+          name: activeService?.title || "Standalone Service",
+          image: activeService?.image || "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
+        },
         address: {
           street: bookingForm.street,
           city: bookingForm.city,
@@ -229,20 +237,17 @@ const InstallationServices = () => {
         notes: bookingForm.notes,
       };
 
-      const res = await bookInstallationService(payload);
-      const bookingData = res.data?.data?.booking || {
-        bookingNumber: `BI-INS-${Date.now().toString().slice(-6)}`,
-        ...payload,
-      };
-
-      setConfirmedBooking(bookingData);
+      // Persist in installation service
+      const createdIns = await installationService.createInstallation(payload);
+      setConfirmedBooking(createdIns);
       setBookingModalOpen(false);
 
-      addNotification({
+      // Notification
+      await notificationService.createNotification({
         title: "Installation Booking Submitted",
-        message: `Your booking for "${payload.serviceType}" (${bookingData.bookingNumber}) is confirmed. A technician is being assigned.`,
+        message: `Your booking for "${payload.serviceType}" (${createdIns.bookingNumber}) is confirmed. A technician is being assigned.`,
         type: "installation",
-        link: `/track?type=installation&id=${bookingData.bookingNumber}`,
+        link: `/account?tab=installations&id=${createdIns.bookingNumber}`,
       });
     } catch (err) {
       console.error(err);

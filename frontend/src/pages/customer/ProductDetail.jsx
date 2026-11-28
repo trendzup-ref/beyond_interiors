@@ -103,91 +103,66 @@ const ProductDetail = () => {
       {/* ================= MAIN SPLIT CONTAINER (Exact Match to Image 2) ================= */}
       <main className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch min-h-[640px] lg:min-h-[750px]">
-          {/* ================= LEFT COLUMN: SERENE AMBIENT SHOWCASE (Exact Match to Image 2) ================= */}
-          <div className="lg:col-span-7 bg-[#DDE5EB] rounded-3xl sm:rounded-[36px] overflow-hidden relative flex flex-col justify-between p-6 sm:p-10 lg:p-14 shadow-xs border border-stone-300/40 min-h-[460px] sm:min-h-[560px] lg:min-h-full">
-            {/* Top Subtle Breadcrumb / SKU */}
-            <div className="z-10 flex items-center justify-between">
-              <span className="text-[11px] font-mono font-semibold tracking-widest uppercase text-stone-600/90">
-                {product.category?.name || "FURNITURE"} · {activeVariant.sku || "BI-ARCH-01"}
-              </span>
 
-              {/* Wishlist toggle */}
+          {/* LEFT COLUMN: FULL-BLEED PRODUCT IMAGE SHOWCASE */}
+          <div className="lg:col-span-7 relative rounded-3xl sm:rounded-[36px] overflow-hidden border border-stone-300/40 shadow-xs min-h-[460px] sm:min-h-[560px] lg:min-h-full bg-[#DDE5EB]">
+
+            {/* Full Background Product Image */}
+            <img
+              src={currentImage}
+              alt={product.name}
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"
+            />
+
+            {/* Optional subtle overlay for text visibility */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30 pointer-events-none" />
+
+            {/* TOP OVERLAY: Category, SKU & Wishlist */}
+            <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-6 sm:p-10">
+
               <button
                 onClick={() => toggleWishlist(product)}
-                className="w-9 h-9 rounded-full bg-white/80 hover:bg-white text-stone-700 flex items-center justify-center shadow-xs transition-transform duration-200 hover:scale-110 cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white/85 hover:bg-white text-stone-800 flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 cursor-pointer"
                 aria-label="Save to wishlist"
               >
-                <Heart className={`w-4 h-4 ${isWishlisted ? "fill-rose-600 text-rose-600" : ""}`} />
+                <Heart
+                  className={`w-4 h-4 ${isWishlisted ? "fill-rose-600 text-rose-600" : ""
+                    }`}
+                />
               </button>
             </div>
 
-            {/* Centered Large Product Image (High-Res Cutout Showcase) */}
-            <div className="relative w-full flex-1 flex items-center justify-center p-4 sm:p-8">
-              <img
-                src={currentImage}
-                alt={product.name}
-                className="max-h-[340px] sm:max-h-[440px] md:max-h-[500px] w-auto object-contain drop-shadow-2xl transition-all duration-700 ease-out"
-              />
-            </div>
-
-            {/* Bottom Controls Row: Thumbnails on Left + Image Progress Line & Prev/Next Arrows on Right */}
-            <div className="z-10 flex items-end justify-between pt-4">
-              {/* Image Thumbnails (Supports up to 5 images per schema) */}
-              <div className="flex items-center gap-2">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImageIndex(idx)}
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-white/70 border-2 transition-all ${idx === selectedImageIndex
-                      ? "border-stone-900 shadow-md scale-105"
-                      : "border-transparent opacity-60 hover:opacity-100"
-                      }`}
-                  >
-                    <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-
-              {/* Exact Reference Match: Image Number Line + Prev/Next Circle Buttons */}
-              <div className="flex items-center gap-4">
-                {/* Progress line e.g. 01 ───── 03 */}
-                <div className="flex items-center gap-2 font-mono text-xs font-semibold text-stone-600 tracking-wider">
-                  <span>0{selectedImageIndex + 1}</span>
-                  <div className="w-12 sm:w-16 h-0.5 bg-stone-400/60 rounded-full" />
-                  <span>0{totalImages}</span>
-                </div>
-
-                {/* Circular Navigation Buttons (< and >) */}
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={prevImage}
-                    aria-label="Previous product image"
-                    className="w-9 h-9 rounded-full bg-stone-900/90 hover:bg-stone-900 text-white flex items-center justify-center shadow-xs transition-transform duration-200 hover:scale-105 active:scale-95"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    aria-label="Next product image"
-                    className="w-9 h-9 rounded-full bg-stone-900/90 hover:bg-stone-900 text-white flex items-center justify-center shadow-xs transition-transform duration-200 hover:scale-105 active:scale-95"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+            {/* BOTTOM OVERLAY: Image Thumbnails */}
+            {images.length > 1 && (
+              <div className="absolute bottom-0 left-0 z-20 p-6 sm:p-10">
+                <div className="flex items-center gap-2">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImageIndex(idx)}
+                      aria-label={`View product image ${idx + 1}`}
+                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-white border-2 transition-all duration-300 ${idx === selectedImageIndex
+                        ? "border-white shadow-lg scale-105"
+                        : "border-white/40 opacity-70 hover:opacity-100"
+                        }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`${product.name} view ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
+
           </div>
 
           {/* ================= RIGHT COLUMN: EDITORIAL SPECIFICATIONS (Exact Match to Image 2) ================= */}
           <div className="lg:col-span-5 flex flex-col justify-between py-2 sm:py-4 space-y-6 sm:space-y-8">
             {/* Top Details */}
             <div className="space-y-5">
-              {/* Designer / Atelier Tag (Exact Match: e.g. SUSANNE GRØNLUND) */}
-              <div>
-                <span className="text-xs font-mono font-bold tracking-widest uppercase text-stone-500">
-                  BEYOND INTERIORS ATELIER
-                </span>
-              </div>
 
               {/* Product Headline Title */}
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-stone-900 leading-tight">

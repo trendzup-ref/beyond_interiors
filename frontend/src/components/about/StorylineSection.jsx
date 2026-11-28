@@ -23,10 +23,6 @@ export default function StorylineSection() {
             <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Heading */}
                 <div className="text-center max-w-2xl mx-auto mb-14 md:mb-20">
-                    <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#A73D4D] font-bold mb-2">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Our Heritage & Milestones</span>
-                    </div>
 
                     <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-900 tracking-tight">
                         Our Storyline

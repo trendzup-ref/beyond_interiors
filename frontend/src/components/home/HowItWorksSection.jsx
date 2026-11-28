@@ -220,37 +220,6 @@ const HowItWorksSection = ({ steps = HOW_IT_WORKS_STEPS }) => {
         })}
       </div>
 
-      {/* BOTTOM CTA BANNER */}
-      <div className="mt-14 sm:mt-16 bg-[#F8F5F0] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-stone-200/80 flex flex-col sm:flex-row items-center justify-between gap-6">
-
-        <div className="space-y-1 text-center sm:text-left">
-          <h4 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
-            Ready to transform your home with Beyond Interiors?
-          </h4>
-
-          <p className="font-sans text-xs sm:text-sm text-stone-500">
-            Book an on-site consultation or explore our luxury collections
-            with certified installation included.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <Link
-            to="/services"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm tracking-wide shadow-md transition-all hover:scale-105 active:scale-95"
-          >
-            <span>Book Site Visit</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-
-          <Link
-            to="/products"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-stone-50 text-stone-800 font-semibold text-xs sm:text-sm tracking-wide border border-stone-300 shadow-xs transition-colors"
-          >
-            <span>Explore Products</span>
-          </Link>
-        </div>
-      </div>
     </section>
   );
 };

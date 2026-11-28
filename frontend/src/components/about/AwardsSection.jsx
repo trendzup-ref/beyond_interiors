@@ -1,12 +1,12 @@
 import { motion } from "motion/react";
-import { Award, Trophy } from "lucide-react";
+import { Award } from "lucide-react";
 import { awardsData } from "../../data/aboutData";
 
 const awardsContainerVariants = {
     hidden: {},
     visible: {
         transition: {
-            staggerChildren: 0.15,
+            staggerChildren: 0.12,
             delayChildren: 0.1,
         },
     },
@@ -18,79 +18,171 @@ const awardItemVariants = {
         opacity: 1,
         y: 0,
         transition: {
-            duration: 0.5,
+            duration: 0.55,
             ease: [0.22, 1, 0.36, 1],
         },
     },
 };
 
-const themeClasses = {
-    dark: "bg-stone-900 text-white border-stone-800",
-    stone: "bg-stone-100 text-stone-900 border-stone-200",
-    walnut: "bg-[#3E2B25] text-amber-50 border-[#3E2B25]",
-    ivory: "bg-white text-stone-900 border-stone-200",
-    cream: "bg-[#F7F2D7] text-stone-900 border-[#E5DEBC]",
-};
-
 export default function AwardsSection() {
+    const awardsCount = awardsData?.length || 5;
+
     return (
-        <section className="bg-[#FAF8F5] py-16 sm:py-24">
+        <section className="bg-[#FAF8F5] py-16 sm:py-24 text-stone-900">
             {/* Aligned strictly to website container max-w-[1520px] */}
             <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mb-10 sm:mb-12">
-                    <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#A73D4D] font-bold mb-2">
-                        <Trophy className="w-3.5 h-3.5" />
-                        <span>Honors & Global Recognition</span>
-                    </div>
-
-                    <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-900 tracking-tight">
-                        Our Awards
-                    </h2>
-                    <p className="text-xs sm:text-sm text-stone-600 mt-2 max-w-xl">
-                        Celebrated by leading architectural publications and design councils for redefining high-end residential fitouts.
-                    </p>
-                </div>
-
-                {/* Staggered Reveal Grid */}
+                {/* Main Reference Split Layout */}
                 <motion.div
                     variants={awardsContainerVariants}
                     initial="hidden"
                     whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5"
+                    viewport={{ once: true, amount: 0.15 }}
+                    className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch"
                 >
-                    {awardsData.map((award) => (
+                    {/* ================= LEFT COLUMN: EDITORIAL INTRO & IMAGE ================= */}
+                    <motion.div
+                        variants={awardItemVariants}
+                        className="lg:col-span-5 flex flex-col justify-between gap-10"
+                    >
+                        <div>
+                            <div className="flex items-baseline gap-3">
+                                <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-stone-500">
+                                    AT
+                                </span>
+                                <h2 className="font-serif text-3xl sm:text-4xl xl:text-5xl font-normal tracking-tight text-stone-900 uppercase">
+                                    Beyond Interiors,
+                                </h2>
+                            </div>
+
+                            <p className="mt-6 text-xs sm:text-sm leading-relaxed text-stone-600 max-w-sm">
+                                We believe luxury interiors are more than just
+                                aesthetics — they are about curating timeless
+                                furnishings, lighting, and bespoke installations
+                                that elevate how a space lives with you.
+                            </p>
+                        </div>
+
+                        {/* Architectural Feature Image */}
+                        <div className="w-full aspect-[4/3] overflow-hidden bg-stone-200">
+                            <img
+                                src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80"
+                                alt="Beyond Interiors curated living space"
+                                loading="lazy"
+                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+                            />
+                        </div>
+                    </motion.div>
+
+                    {/* ================= RIGHT COLUMN: 2x2 HAIRLINE METRICS & QUOTE GRID ================= */}
+                    <div className="lg:col-span-7 border-t border-stone-300/80 grid grid-cols-1 sm:grid-cols-2">
+                        {/* CELL 1: Top-Left */}
                         <motion.div
-                            key={award.id}
                             variants={awardItemVariants}
-                            className={`border rounded-2xl p-6 min-h-[160px] flex flex-col justify-between shadow-xs transition-transform duration-300 hover:-translate-y-1 ${themeClasses[award.theme]
-                                }`}
+                            className="flex flex-col justify-end p-6 sm:p-8 min-h-[220px] sm:min-h-[260px] border-b sm:border-r border-stone-300/80"
                         >
-                            <div className="flex items-center justify-between">
-                                <Award className="w-5 h-5 opacity-85" strokeWidth={1.75} />
-                                <span className="text-[11px] font-mono uppercase tracking-widest font-semibold opacity-75">
-                                    {award.year}
+                            <div className="flex items-end justify-between gap-4">
+                                <p className="text-xs sm:text-[13px] leading-snug text-stone-600 max-w-[180px]">
+                                    design & architectural awards honored for
+                                    residential fitouts.
+                                </p>
+                                <span className="font-serif text-4xl sm:text-5xl font-normal tracking-tight text-stone-900 leading-none">
+                                    {awardsCount}
                                 </span>
                             </div>
+                        </motion.div>
 
-                            <div className="mt-6">
-                                <p className="text-[10px] uppercase tracking-wider font-semibold opacity-75 mb-1">
-                                    {award.organization}
+                        {/* CELL 2: Top-Right */}
+                        <motion.div
+                            variants={awardItemVariants}
+                            className="flex flex-col justify-end p-6 sm:p-8 min-h-[220px] sm:min-h-[260px] border-b border-stone-300/80"
+                        >
+                            <div className="flex items-end justify-between gap-4">
+                                <p className="text-xs sm:text-[13px] leading-snug text-stone-600 max-w-[180px]">
+                                    master artisans, designers & installation
+                                    specialists.
                                 </p>
-                                <h3 className="font-serif text-base font-bold leading-snug">
-                                    {award.title}
-                                </h3>
+                                <span className="font-serif text-4xl sm:text-5xl font-normal tracking-tight text-stone-900 leading-none">
+                                    25+
+                                </span>
                             </div>
                         </motion.div>
-                    ))}
+
+                        {/* CELL 3: Bottom-Left */}
+                        <motion.div
+                            variants={awardItemVariants}
+                            className="flex flex-col justify-end p-6 sm:p-8 min-h-[240px] sm:min-h-[290px] border-b sm:border-b-0 sm:border-r border-stone-300/80"
+                        >
+                            <div className="flex items-end justify-between gap-4">
+                                <p className="text-xs sm:text-[13px] leading-snug text-stone-600 max-w-[185px]">
+                                    completed turnkey projects and satisfied
+                                    homeowners across India.
+                                </p>
+                                <span className="font-serif text-4xl sm:text-5xl font-normal tracking-tight text-stone-900 leading-none">
+                                    120+
+                                </span>
+                            </div>
+                        </motion.div>
+
+                        {/* CELL 4: Bottom-Right (Dark Walnut Statement Card) */}
+                        <motion.div
+                            variants={awardItemVariants}
+                            className="flex flex-col justify-between p-6 sm:p-8 min-h-[240px] sm:min-h-[290px] bg-[#3E2B25] text-amber-50"
+                        >
+                            <p className="text-sm sm:text-[15px] leading-relaxed font-normal text-amber-50/90 max-w-[230px]">
+                                Design isn't just what you see — it's
+                                how a space lives with you, from inspiration to
+                                installation.
+                            </p>
+
+                            <div className="pt-8">
+                                <p className="text-xs font-medium tracking-wide text-amber-50">
+                                    Beyond Interiors Studio
+                                </p>
+                                <p className="text-[11px] text-amber-100/60 mt-0.5">
+                                    From Inspiration to Installation
+                                </p>
+                            </div>
+                        </motion.div>
+                    </div>
                 </motion.div>
 
-                <div className="flex items-center gap-4 mt-10 text-stone-500">
-                    <span className="w-12 h-[1px] bg-stone-300" aria-hidden="true" />
-                    <p className="text-xs uppercase tracking-wider font-medium">
-                        Recognized for architectural curation & installation excellence nationwide
-                    </p>
-                </div>
+                {/* ================= HONORS & AWARDS STRIP (USES YOUR awardsData) ================= */}
+                {awardsData?.length > 0 && (
+                    <motion.div
+                        variants={awardsContainerVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.2 }}
+                        className="mt-14 pt-8 border-t border-stone-300/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
+                    >
+                        {awardsData.map((award) => (
+                            <motion.div
+                                key={award.id}
+                                variants={awardItemVariants}
+                                className="group flex flex-col justify-between border-l border-stone-300/80 pl-4 transition-colors hover:border-[#A73D4D]"
+                            >
+                                <div className="flex items-center justify-between text-stone-500">
+                                    <Award
+                                        className="w-4 h-4 text-[#A73D4D]"
+                                        strokeWidth={1.6}
+                                    />
+                                    <span className="text-[11px] font-mono tracking-widest">
+                                        {award.year}
+                                    </span>
+                                </div>
+
+                                <div className="mt-4">
+                                    <p className="text-[10px] uppercase tracking-wider text-stone-500 font-medium">
+                                        {award.organization}
+                                    </p>
+                                    <h3 className="mt-1 font-serif text-sm font-semibold text-stone-900 leading-snug group-hover:text-[#A73D4D] transition-colors">
+                                        {award.title}
+                                    </h3>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                )}
             </div>
         </section>
     );

@@ -357,7 +357,7 @@ const ShippingPolicy = () => {
       </div>
 
       {/* ================= TOP-LEFT SQUARES NAVIGATION CONTROLLER ================= */}
-      <div className="fixed top-32 left-4 sm:left-8 z-40 hidden md:flex flex-col gap-1.5">
+      <div className="fixed top-48 left-4 sm:left-8 z-40 hidden md:flex flex-col gap-1.5">
 
         <div className="grid grid-cols-2 gap-1.5 max-h-[75vh] overflow-y-auto overflow-x-hidden no-scrollbar">
           {SHIPPING_SECTIONS.map((sec) => {

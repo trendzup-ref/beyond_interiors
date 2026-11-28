@@ -89,8 +89,8 @@ const FaqSection = ({ faqs = FAQ_ITEMS, className = "" }) => {
                 >
                   <span
                     className={`font-sans text-base sm:text-lg font-medium transition-colors ${isOpen
-                        ? "text-[#C0623A]"
-                        : "text-black"
+                      ? "text-[#C0623A]"
+                      : "text-black"
                       }`}
                   >
                     {faq.question}
@@ -119,19 +119,6 @@ const FaqSection = ({ faqs = FAQ_ITEMS, className = "" }) => {
           })}
         </div>
 
-        {/* Need More Help Footer Link */}
-        <div className="pt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-500 border-t border-stone-100 mt-8">
-          <span className="font-light">
-            Still have queries regarding warranties, installation, or custom bespoke orders?
-          </span>
-          <Link
-            to="/support"
-            className="inline-flex items-center gap-1.5 font-semibold text-[#A73D4D] hover:text-[#C0623A] transition-colors"
-          >
-            <span>Contact Support Desk</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
       </div>
     </section>
   );

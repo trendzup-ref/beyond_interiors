@@ -2,14 +2,10 @@ import React, { useState, useRef } from "react";
 import { Link } from "react-router";
 import {
   Tag,
-  ChevronLeft,
-  ChevronRight,
   X,
   ArrowUpRight,
   Wrench,
-  CheckCircle2,
   ExternalLink,
-  Camera,
 } from "lucide-react";
 
 // Standard Lucide-styled Instagram SVG component
@@ -30,9 +26,9 @@ const InstagramIcon = ({ className = "w-4 h-4" }) => (
 );
 
 /**
- * INSPIRATION & REAL HOMES DATASET
- * Inspired by IKEA "Looks by you" with shoppable product pins & installation booking.
- * Replace any `imageUrl` with real customer photos uploaded from your admin panel.
+- INSPIRATION & REAL HOMES DATASET
+- Inspired by IKEA "Looks by you" with shoppable product pins & installation booking.
+- Replace any `imageUrl` with real customer photos uploaded from your admin panel.
  */
 export const INSPIRATION_ITEMS = [
   {
@@ -40,7 +36,6 @@ export const INSPIRATION_ITEMS = [
     handle: "@nishant_living",
     roomTitle: "Sunlit Minimalist Living Corner",
     location: "Mumbai, Maharashtra",
-    // Replace with your admin image URL
     imageUrl:
       "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80",
     altText: "Client Living Room styled with Beyond Interiors bouclé chair and lighting",
@@ -52,7 +47,7 @@ export const INSPIRATION_ITEMS = [
         category: "Furniture",
         price: "₹34,500",
         link: "/products?category=furniture",
-        x: 48, // Hotspot percentage
+        x: 48,
         y: 62,
       },
       {
@@ -89,7 +84,6 @@ export const INSPIRATION_ITEMS = [
     handle: "@ananya_architect",
     roomTitle: "Compact Architectural Home Studio",
     location: "Bengaluru, Karnataka",
-    // Replace with your admin image URL
     imageUrl:
       "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1000&q=80",
     altText: "Executive Study styled with Beyond Interiors desk and shelving",
@@ -129,7 +123,6 @@ export const INSPIRATION_ITEMS = [
     handle: "@kabir_interiors",
     roomTitle: "Warm Minimalist Foyer & Entryway",
     location: "New Delhi",
-    // Replace with your admin image URL
     imageUrl:
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80",
     altText: "Modern Foyer styled with Beyond Interiors shoe console and mirror",
@@ -160,7 +153,6 @@ export const INSPIRATION_ITEMS = [
     handle: "@rohan_designlab",
     roomTitle: "Zen Master Suite & Walk-In Corner",
     location: "Pune, Maharashtra",
-    // Replace with your admin image URL
     imageUrl:
       "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1000&q=80",
     altText: "Bedroom Corner styled with Beyond Interiors linen curtains and mirror",
@@ -200,7 +192,6 @@ export const INSPIRATION_ITEMS = [
     handle: "@priya_lifestyle",
     roomTitle: "Nordic Dining Space with Organic Textures",
     location: "Hyderabad, Telangana",
-    // Replace with your admin image URL
     imageUrl:
       "https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=1000&q=80",
     altText: "Nordic Dining Room styled with Beyond Interiors dining table and pendant",
@@ -249,7 +240,6 @@ export const INSPIRATION_ITEMS = [
     handle: "@vikram_residence",
     roomTitle: "Modern Wellness Spa En-Suite",
     location: "Jaipur, Rajasthan",
-    // Replace with your admin image URL
     imageUrl:
       "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1000&q=80",
     altText: "Luxury Spa Bathroom with Beyond Interiors fluted vanity",
@@ -292,7 +282,7 @@ const InspirationSection = () => {
   const scrollContainerRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Update progress bar on scroll (like IKEA's progress bar)
+  // Update progress bar on scroll
   const handleScroll = () => {
     if (!scrollContainerRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
@@ -303,12 +293,6 @@ const InspirationSection = () => {
     }
     const progress = (scrollLeft / maxScroll) * 100;
     setScrollProgress(progress);
-  };
-
-  const scroll = (direction) => {
-    if (!scrollContainerRef.current) return;
-    const scrollAmount = direction === "left" ? -380 : 380;
-    scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
   };
 
   const openLookModal = (look) => {
@@ -323,50 +307,30 @@ const InspirationSection = () => {
 
   return (
     <section className="w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-      {/* ================= SECTION HEADER (Reference Exact Match) ================= */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
-        <div>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
-            Looks by you
-          </h2>
-          <p className="font-sans text-xs sm:text-sm text-stone-500 max-w-2xl mt-1.5 leading-relaxed">
-            Get inspired by real customer homes styled and installed by <strong>BEYOND INTERIORS</strong>.
-            Discover shoppable products, request professional installation, or share your own space with{" "}
-            <span className="font-semibold text-stone-800">#BeyondInteriors</span> to get featured.
-          </p>
-        </div>
-
-        {/* Previous / Next Scroll Buttons */}
-        <div className="flex items-center gap-2.5 self-end sm:self-auto">
-          <button
-            onClick={() => scroll("left")}
-            aria-label="Previous inspiration ideas"
-            className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-900 bg-white hover:bg-stone-50 text-stone-800 flex items-center justify-center transition-all duration-200 shadow-xs hover:scale-105 active:scale-95"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            aria-label="Next inspiration ideas"
-            className="w-10 h-10 rounded-full border border-stone-300 hover:border-stone-900 bg-white hover:bg-stone-50 text-stone-800 flex items-center justify-center transition-all duration-200 shadow-xs hover:scale-105 active:scale-95"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+      {/* ================= SECTION HEADER ================= */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
+          Looks by you
+        </h2>
+        <p className="font-sans text-xs sm:text-sm text-stone-500 max-w-2xl mt-1.5 leading-relaxed">
+          Get inspired by real customer homes styled and installed by <strong>BEYOND INTERIORS</strong>.
+          Discover shoppable products, request professional installation, or share your own space with{" "}
+          <span className="font-semibold text-stone-800">#BeyondInteriors</span> to get featured.
+        </p>
       </div>
 
-      {/* ================= HORIZONTAL CARD GALLERY (Reference Exact Match) ================= */}
+      {/* ================= HORIZONTAL CARD GALLERY ================= */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory no-scrollbar"
+        className="flex gap-3 sm:gap-4 lg:gap-5 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory no-scrollbar"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {INSPIRATION_ITEMS.map((item) => (
           <div
             key={item.id}
             onClick={() => openLookModal(item)}
-            className="group relative flex-shrink-0 w-[260px] sm:w-[320px] md:w-[350px] aspect-[4/5] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer bg-stone-100 shadow-xs hover:shadow-xl transition-all duration-500 snap-start border border-stone-200/60"
+            className="group relative flex-shrink-0 w-[180px] sm:w-[215px] md:w-[235px] lg:w-[255px] aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-stone-100 shadow-xs hover:shadow-xl transition-all duration-500 snap-start border border-stone-200/60"
           >
             {/* INSPIRATION IMAGE */}
             <img
@@ -379,27 +343,27 @@ const InspirationSection = () => {
             {/* Subtle Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-80 group-hover:opacity-90 transition-opacity" />
 
-            {/* Top-Left Instagram Badge (Reference Match) */}
-            <div className="absolute top-3.5 left-3.5 z-10">
-              <span className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-md text-stone-900 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110">
-                <InstagramIcon className="w-4 h-4" />
+            {/* Top-Left Instagram Badge */}
+            <div className="absolute top-2.5 left-2.5 z-10">
+              <span className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-md text-stone-900 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110">
+                <InstagramIcon className="w-3.5 h-3.5" />
               </span>
             </div>
 
-            {/* Bottom-Left Shoppable Tag Badge (Reference Match: 🏷️ count) */}
-            <div className="absolute bottom-3.5 left-3.5 z-10">
+            {/* Bottom-Left Shoppable Tag Badge */}
+            <div className="absolute bottom-2.5 left-2.5 z-10">
               <button
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 text-stone-900 font-semibold text-xs tracking-wider shadow-md backdrop-blur-xs transition-all duration-300 group-hover:bg-amber-600 group-hover:text-white"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 text-stone-900 font-semibold text-[11px] tracking-wider shadow-md backdrop-blur-xs transition-all duration-300 group-hover:bg-amber-600 group-hover:text-white"
                 title={`${item.taggedCount} shoppable products in this space`}
               >
-                <Tag className="w-3.5 h-3.5" />
+                <Tag className="w-3 h-3" />
                 <span>{item.taggedCount}</span>
               </button>
             </div>
 
             {/* Bottom Title on Hover */}
-            <div className="absolute bottom-3.5 right-3.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">
+            <div className="absolute bottom-2.5 right-2.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-black/50 backdrop-blur-md px-2 py-1 rounded-full border border-white/20">
                 <span>Explore</span>
                 <ArrowUpRight className="w-3 h-3" />
               </span>
@@ -408,7 +372,7 @@ const InspirationSection = () => {
         ))}
       </div>
 
-      {/* ================= IKEA-STYLE HORIZONTAL PROGRESS BAR (Reference Match) ================= */}
+      {/* ================= HORIZONTAL PROGRESS BAR ================= */}
       <div className="w-full mt-4 h-1 bg-stone-200 rounded-full overflow-hidden">
         <div
           className="h-full bg-stone-900 rounded-full transition-all duration-300 ease-out"
@@ -416,7 +380,7 @@ const InspirationSection = () => {
         />
       </div>
 
-      {/* ================= SHOP THE LOOK INTERACTIVE MODAL (IKEA Behavior) ================= */}
+      {/* ================= SHOP THE LOOK INTERACTIVE MODAL ================= */}
       {selectedLook && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-sm animate-fadeIn"
@@ -450,9 +414,8 @@ const InspirationSection = () => {
                   <button
                     key={prod.id}
                     onClick={() => setActiveHotspot(prod)}
-                    className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-                      isSelected ? "scale-125 ring-4 ring-amber-400" : "scale-100 hover:scale-110"
-                    }`}
+                    className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${isSelected ? "scale-125 ring-4 ring-amber-400" : "scale-100 hover:scale-110"
+                      }`}
                     style={{ left: `${prod.x}%`, top: `${prod.y}%` }}
                     aria-label={`View ${prod.name}`}
                   >
@@ -496,11 +459,10 @@ const InspirationSection = () => {
                         <div
                           key={prod.id}
                           onClick={() => setActiveHotspot(prod)}
-                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                            isSelected
-                              ? "bg-amber-50/60 border-amber-500/80 shadow-xs"
-                              : "bg-stone-50 hover:bg-stone-100 border-stone-200"
-                          }`}
+                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${isSelected
+                            ? "bg-amber-50/60 border-amber-500/80 shadow-xs"
+                            : "bg-stone-50 hover:bg-stone-100 border-stone-200"
+                            }`}
                         >
                           <div className="space-y-0.5">
                             <span className="text-[10px] uppercase font-mono font-semibold text-amber-800">

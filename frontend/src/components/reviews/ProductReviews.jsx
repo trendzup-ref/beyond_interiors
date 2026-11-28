@@ -106,12 +106,6 @@ const ProductReviews = ({ productName = "Blanco Lounge Chair" }) => {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-stone-200/80 pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 mb-1">
-            <Sparkles className="w-4 h-4 text-amber-600" />
-            <span className="text-[11px] font-mono uppercase tracking-widest text-stone-500 font-semibold">
-              VERIFIED CLIENT EXPERIENCES
-            </span>
-          </div>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
             Reviews & Architectural Feedback
           </h2>
@@ -141,11 +135,10 @@ const ProductReviews = ({ productName = "Blanco Lounge Chair" }) => {
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-4 h-4 ${
-                  i < Math.round(Number(averageRating))
+                className={`w-4 h-4 ${i < Math.round(Number(averageRating))
                     ? "fill-amber-500 text-amber-500"
                     : "text-stone-300"
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -160,11 +153,10 @@ const ProductReviews = ({ productName = "Blanco Lounge Chair" }) => {
             <button
               key={val}
               onClick={() => setSelectedFilter(val)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                selectedFilter === val
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${selectedFilter === val
                   ? "bg-stone-900 text-white shadow-xs"
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200"
-              }`}
+                }`}
             >
               {val === "all" ? "All Ratings" : `${val} Stars`}
             </button>
@@ -203,9 +195,8 @@ const ProductReviews = ({ productName = "Blanco Lounge Chair" }) => {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-3.5 h-3.5 ${
-                        i < rev.rating ? "fill-amber-500 text-amber-500" : "text-stone-300"
-                      }`}
+                      className={`w-3.5 h-3.5 ${i < rev.rating ? "fill-amber-500 text-amber-500" : "text-stone-300"
+                        }`}
                     />
                   ))}
                 </div>
@@ -253,11 +244,10 @@ const ProductReviews = ({ productName = "Blanco Lounge Chair" }) => {
                       className="p-1 cursor-pointer"
                     >
                       <Star
-                        className={`w-6 h-6 ${
-                          star <= formRating
+                        className={`w-6 h-6 ${star <= formRating
                             ? "fill-amber-500 text-amber-500"
                             : "text-stone-300"
-                        }`}
+                          }`}
                       />
                     </button>
                   ))}

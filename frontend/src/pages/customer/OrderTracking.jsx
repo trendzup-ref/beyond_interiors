@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { trackOrder, trackInstallation } from "../../api/customerApi.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { orderService } from "../../services/orderService.js";
+import { installationService } from "../../services/installationService.js";
 
 const ORDER_STAGES = [
   { key: "pending", label: "Order Placed", desc: "Registered in system" },
@@ -54,6 +56,14 @@ const OrderTracking = () => {
 
     try {
       if (typeToTrack === "order") {
+        // 1. Try local service first
+        const localOrder = await orderService.getOrderById(queryToTrack.trim());
+        if (localOrder) {
+          setOrderResult(localOrder);
+          return;
+        }
+
+        // 2. Fallback to API
         const res = await trackOrder(queryToTrack.trim());
         if (res.data?.data?.order) {
           setOrderResult(res.data.data.order);
@@ -61,6 +71,14 @@ const OrderTracking = () => {
           setErrorMsg("No order record found for this identifier.");
         }
       } else {
+        // 1. Try local installation service first
+        const localIns = await installationService.getInstallationById(queryToTrack.trim());
+        if (localIns) {
+          setInstallationResult(localIns);
+          return;
+        }
+
+        // 2. Fallback to API
         const res = await trackInstallation(queryToTrack.trim());
         if (res.data?.data?.booking) {
           setInstallationResult(res.data.data.booking);

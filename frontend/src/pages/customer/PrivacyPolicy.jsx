@@ -80,10 +80,6 @@ const PrivacyPolicy = () => {
 
         {/* Center Hero Title & Subtitle (Reference Match) */}
         <div className="relative z-20 max-w-4xl mx-auto px-4 py-16 sm:py-24 text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-600/30 border border-amber-500/40 text-amber-300 text-xs font-mono tracking-widest uppercase">
-            <Shield className="w-3.5 h-3.5" />
-            <span>TRANSPARENCY & PRIVACY ASSURANCE</span>
-          </div>
 
           <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-tight">
             Privacy Policy
@@ -103,7 +99,7 @@ const PrivacyPolicy = () => {
       <main className="max-w-[1520px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           {/* LEFT COLUMN: TABLE OF CONTENTS (Sticky Navigation Sidebar) */}
-          <aside className="lg:col-span-3 sticky top-6 self-start space-y-3 bg-[#FAF7F2] p-5 sm:p-6 rounded-3xl border border-stone-200/80 shadow-xs">
+          <aside className="lg:col-span-3 sticky top-38 self-start space-y-3 bg-[#FAF7F2] p-5 sm:p-6 border border-stone-200/80 shadow-xs">
             <div className="border-b border-stone-200/80 pb-3">
               <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-stone-500 block">
                 Table of contents
@@ -119,11 +115,10 @@ const PrivacyPolicy = () => {
                   <button
                     key={sec.id}
                     onClick={() => scrollTo(sec.id)}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all ${
-                      isActive
-                        ? "bg-stone-900 text-white shadow-xs"
-                        : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
-                    }`}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all ${isActive
+                      ? "bg-stone-900 text-white shadow-xs"
+                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
+                      }`}
                   >
                     <Icon className={`w-4 h-4 ${isActive ? "text-amber-400" : "text-stone-400"}`} />
                     <span>{sec.label}</span>

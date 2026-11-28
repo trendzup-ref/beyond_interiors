@@ -72,10 +72,6 @@ export default function OversightSection() {
                                     exit={{ opacity: 0, y: -12 }}
                                     transition={{ duration: 0.4 }}
                                 >
-                                    <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#A73D4D] font-bold mb-2">
-                                        <Sparkles className="w-3.5 h-3.5" />
-                                        <span>Architectural Assurance</span>
-                                    </div>
 
                                     <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-4">
                                         {currentSlide.title}

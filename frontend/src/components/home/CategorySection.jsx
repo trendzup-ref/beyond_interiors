@@ -1,15 +1,14 @@
-
 import React, { useRef, useState } from "react";
 import { Link } from "react-router";
-import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence, useInView } from "motion/react";
 
 // Reusable motion component
 const MotionLink = motion(Link);
 
 /**
- * 10 CATEGORIES CONFIGURATION
- * Original categories, images, text and ordering preserved.
+- 10 CATEGORIES CONFIGURATION
+- Original categories, images, text and ordering preserved.
  */
 export const CATEGORY_PAGES = [
   [
@@ -118,12 +117,14 @@ export const CATEGORY_PAGES = [
   ],
 ];
 
+const ALL_CATEGORIES = CATEGORY_PAGES.flat();
+
 // Animation configuration
 const containerVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.18,
+      staggerChildren: 0.12,
       delayChildren: 0.05,
     },
   },
@@ -153,7 +154,7 @@ const cardVariants = {
   },
 };
 
-// Reusable category card
+// Reusable category card (category name + right arrow, compact height)
 const CategoryCard = ({ category, size = "small", accent = false }) => {
   const isLarge = size === "large";
 
@@ -161,9 +162,9 @@ const CategoryCard = ({ category, size = "small", accent = false }) => {
     <MotionLink
       to={category.link}
       variants={cardVariants}
-      className={`group relative w-full rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-stone-300/40 transition-shadow duration-500 hover:shadow-xl ${isLarge
-          ? "h-full p-7 sm:p-9"
-          : "h-[250px] sm:h-[270px] p-6 sm:p-7"
+      className={`group relative w-full rounded-2xl sm:rounded-3xl overflow-hidden flex items-end border border-stone-300/40 transition-shadow duration-500 hover:shadow-xl ${isLarge
+        ? "h-full p-6 sm:p-7"
+        : "h-[130px] sm:h-[155px] md:h-[175px] p-4 sm:p-5"
         }`}
     >
       <img
@@ -175,54 +176,30 @@ const CategoryCard = ({ category, size = "small", accent = false }) => {
 
       <div
         className={`absolute inset-0 pointer-events-none ${isLarge
-            ? "bg-gradient-to-b from-black/60 via-black/20 to-black/90"
-            : accent
-              ? "bg-gradient-to-t from-[#822432]/95 via-black/55 to-black/30"
-              : "bg-gradient-to-t from-black/90 via-black/45 to-black/25"
+          ? "bg-gradient-to-b from-black/30 via-black/20 to-black/80"
+          : accent
+            ? "bg-gradient-to-t from-[#822432]/90 via-black/45 to-black/15"
+            : "bg-gradient-to-t from-black/80 via-black/35 to-black/10"
           }`}
       />
 
-      {/* Top metadata */}
-      <div className="z-10 relative flex items-center justify-between">
-        <span
-          className={`${isLarge
-              ? "text-xs font-mono text-white/90"
-              : accent
-                ? "text-[11px] text-rose-200"
-                : "text-[11px] text-stone-200"
-            } font-medium tracking-wide`}
-        >
-          {category.meta}
-        </span>
-
-        <span
-          className={`rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${isLarge ? "w-9 h-9" : "w-7 h-7"
-            } ${isLarge ? "" : "opacity-0 group-hover:opacity-100"
-            }`}
-        >
-          <ArrowUpRight className={isLarge ? "w-4 h-4" : "w-3.5 h-3.5"} />
-        </span>
-      </div>
-
-      {/* Bottom editorial content */}
-      <div className={`z-10 relative ${isLarge ? "space-y-3.5 max-w-lg" : "space-y-2"}`}>
-        <span
-          className={`inline-block font-semibold tracking-wider rounded-full bg-white text-stone-900 shadow-sm ${isLarge
-              ? "text-xs px-3.5 py-1"
-              : "text-[10px] sm:text-[11px] px-2.5 py-0.5"
-            }`}
-        >
-          {category.badge}
-        </span>
-
+      {/* Category name + right arrow */}
+      <div className="z-10 relative w-full flex items-center justify-between gap-2">
         <h3
           className={`font-serif font-bold text-white leading-snug drop-shadow-md ${isLarge
-              ? "text-2xl sm:text-3xl md:text-4xl"
-              : "text-base sm:text-lg line-clamp-2"
+            ? "text-xl sm:text-2xl md:text-3xl"
+            : "text-sm sm:text-base md:text-lg"
             }`}
         >
-          {category.headline}
+          {category.name}
         </h3>
+
+        <span
+          className={`shrink-0 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-stone-900 group-hover:translate-x-0.5 ${isLarge ? "w-9 h-9" : "w-7 h-7 sm:w-8 sm:h-8"
+            }`}
+        >
+          <ArrowRight className={isLarge ? "w-4 h-4" : "w-3.5 h-3.5"} />
+        </span>
       </div>
     </MotionLink>
   );
@@ -244,10 +221,7 @@ const CategorySection = () => {
   const currentCategories = CATEGORY_PAGES[activePageIndex];
 
   const handlePageChange = (newIndex) => {
-    if (
-      newIndex === activePageIndex ||
-      isTransitioning
-    ) {
+    if (newIndex === activePageIndex || isTransitioning) {
       return;
     }
 
@@ -260,9 +234,7 @@ const CategorySection = () => {
   };
 
   const prevCategories = () => {
-    handlePageChange(
-      (activePageIndex - 1 + totalPages) % totalPages
-    );
+    handlePageChange((activePageIndex - 1 + totalPages) % totalPages);
   };
 
   const [card1, card2, centerHero, card4, card5] = currentCategories;
@@ -284,8 +256,8 @@ const CategorySection = () => {
           </p>
         </div>
 
-        {/* Navigation controls */}
-        <div className="flex items-center gap-3 self-end sm:self-auto">
+        {/* Navigation controls (desktop only, since mobile shows all 10 cards) */}
+        <div className="hidden md:flex items-center gap-3 self-end sm:self-auto">
           <button
             onClick={prevCategories}
             disabled={isTransitioning}
@@ -308,45 +280,57 @@ const CategorySection = () => {
         </div>
       </div>
 
-      {/* Animated category grid */}
-      <AnimatePresence
-        mode="wait"
-        initial={false}
-        onExitComplete={() => {
-          // The new grid will now animate in.
-        }}
+      {/* MOBILE VIEW: All 10 category cards */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate={hasEntered ? "visible" : "hidden"}
+        className="grid grid-cols-2 gap-3 sm:gap-4 md:hidden"
       >
-        <motion.div
-          key={activePageIndex}
-          variants={containerVariants}
-          initial="hidden"
-          animate={hasEntered ? "visible" : "hidden"}
-          exit="exit"
-          onAnimationComplete={(definition) => {
-            if (definition === "visible") {
-              setIsTransitioning(false);
-            }
-          }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6"
-        >
-          {/* LEFT COLUMN */}
-          <div className="lg:col-span-3 flex flex-col gap-4 sm:gap-6">
-            <CategoryCard category={card1} />
-            <CategoryCard category={card2} />
-          </div>
+        {ALL_CATEGORIES.map((category, idx) => (
+          <CategoryCard
+            key={category.id}
+            category={category}
+            accent={idx === 4 || idx === 9}
+          />
+        ))}
+      </motion.div>
 
-          {/* CENTER FEATURED CARD */}
-          <div className="md:col-span-2 lg:col-span-5 h-[480px] sm:h-[540px] lg:h-full">
-            <CategoryCard category={centerHero} size="large" />
-          </div>
+      {/* DESKTOP VIEW: Animated paginated category grid */}
+      <div className="hidden md:block">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activePageIndex}
+            variants={containerVariants}
+            initial="hidden"
+            animate={hasEntered ? "visible" : "hidden"}
+            exit="exit"
+            onAnimationComplete={(definition) => {
+              if (definition === "visible") {
+                setIsTransitioning(false);
+              }
+            }}
+            className="grid md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6"
+          >
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-3 flex flex-col gap-4 sm:gap-6">
+              <CategoryCard category={card1} />
+              <CategoryCard category={card2} />
+            </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="lg:col-span-4 flex flex-col gap-4 sm:gap-6">
-            <CategoryCard category={card4} />
-            <CategoryCard category={card5} accent />
-          </div>
-        </motion.div>
-      </AnimatePresence>
+            {/* CENTER FEATURED CARD */}
+            <div className="md:col-span-2 lg:col-span-5 h-[220px] lg:h-full">
+              <CategoryCard category={centerHero} size="large" />
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="lg:col-span-4 flex flex-col gap-4 sm:gap-6">
+              <CategoryCard category={card4} />
+              <CategoryCard category={card5} accent />
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </section>
   );
 };

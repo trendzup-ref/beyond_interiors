@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 export const DEFAULT_HERO_SLIDES = [
   {
@@ -47,56 +46,71 @@ export const DEFAULT_HERO_SLIDES = [
 
 const HeroBanner = ({
   slides = DEFAULT_HERO_SLIDES,
-  autoPlayInterval = 6000,
+  autoPlayInterval = 3000,
 }) => {
+  const totalSlides = slides.length;
+  const extendedSlides = totalSlides > 1 ? [...slides, slides[0]] : slides;
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef(null);
 
-  const totalSlides = slides.length;
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % totalSlides);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
-  };
+  const activeDotIndex = currentIndex % totalSlides;
 
   const goToSlide = (index) => {
+    setIsTransitioning(true);
     setCurrentIndex(index);
   };
 
-  // Autoplay slider
+  // Autoplay every 3 seconds
   useEffect(() => {
     if (isPaused || totalSlides <= 1) return;
 
     timerRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % totalSlides);
+      setIsTransitioning(true);
+      setCurrentIndex((prev) => (prev < totalSlides ? prev + 1 : prev));
     }, autoPlayInterval);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentIndex, isPaused, totalSlides, autoPlayInterval]);
+  }, [isPaused, totalSlides, autoPlayInterval]);
+
+  const handleTransitionEnd = () => {
+    if (currentIndex === totalSlides) {
+      setIsTransitioning(false);
+      setCurrentIndex(0);
+    }
+  };
+
+  useEffect(() => {
+    if (!isTransitioning) {
+      const frame = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsTransitioning(true);
+        });
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [isTransitioning]);
 
   if (!totalSlides) return null;
 
   return (
-    <section className="w-full max-w-[1520px] mx-auto px-3 sm:px-5 lg:px-8 py-3 sm:py-5 lg:py-6">
-
+    <section className="w-full max-w-[1520px] mx-auto px-3 sm:px-5 lg:px-8 py-3 sm:py-4 lg:py-5">
       {/* HERO BANNER */}
       <div
         className="
           relative w-full
-          h-[440px]
-          min-[480px]:h-[460px]
-          sm:h-[480px]
-          md:h-[440px]
-          lg:h-[500px]
-          xl:h-[540px]
-          2xl:h-[580px]
-          rounded-2xl sm:rounded-3xl lg:rounded-[36px]
+          h-[320px]
+          min-[480px]:h-[340px]
+          sm:h-[360px]
+          md:h-[380px]
+          lg:h-[400px]
+          xl:h-[430px]
+          2xl:h-[460px]
+          rounded-2xl sm:rounded-3xl lg:rounded-[32px]
           overflow-hidden shadow-lg
           border border-stone-200/50 group
           isolate
@@ -110,227 +124,193 @@ const HeroBanner = ({
           }
         }}
       >
-        {/* SLIDES */}
-        {slides.map((slide, index) => {
-          const isActive = index === currentIndex;
+        {/* HORIZONTAL INFINITE SLIDING TRACK */}
+        <div
+          onTransitionEnd={handleTransitionEnd}
+          className={`flex w-full h-full will-change-transform ${isTransitioning
+              ? "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              : "transition-none"
+            }`}
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {extendedSlides.map((slide, index) => {
+            const isActive = index === currentIndex;
 
-          return (
-            <div
-              key={slide.id || index}
-              className={`
-                absolute inset-0 w-full h-full
-                transition-all duration-1000 ease-in-out
-                ${isActive
-                  ? "opacity-100 z-10 scale-100"
-                  : "opacity-0 z-0 pointer-events-none scale-105"
-                }
-              `}
-              aria-hidden={!isActive}
-            >
-              {/* BACKGROUND IMAGE */}
-              <img
-                src={slide.imageUrl}
-                alt={slide.altText}
-                className="absolute inset-0 w-full h-full object-cover object-center"
-                loading={index === 0 ? "eager" : "lazy"}
-              />
-
-              {/* GRADIENT OVERLAYS */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/5 pointer-events-none" />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
-
-              {/* EDITORIAL CONTENT */}
+            return (
               <div
-                className="
-                  absolute inset-0 z-20
-                  flex flex-col justify-center
-                  px-5 py-12
-                  min-[480px]:px-7
-                  sm:px-10 sm:py-14
-                  md:px-12
-                  lg:px-16
-                  xl:px-20
-                "
+                key={`${slide.id || index}-${index}`}
+                className="relative w-full h-full shrink-0 overflow-hidden"
+                aria-hidden={!isActive}
               >
-                <div className="w-full max-w-[720px] space-y-4 sm:space-y-5 lg:space-y-6">
+                {/* BACKGROUND IMAGE */}
+                <img
+                  src={slide.imageUrl}
+                  alt={slide.altText}
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                  loading={index === 0 ? "eager" : "lazy"}
+                />
 
-                  {/* TAGLINE */}
-                  <p className="
-                    text-[9px]
-                    min-[480px]:text-[10px]
-                    sm:text-xs
-                    tracking-[0.2em]
-                    sm:tracking-[0.25em]
-                    font-medium text-white/80
-                    uppercase
-                  ">
-                    {slide.tagline}
-                  </p>
+                {/* GRADIENT OVERLAYS */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/5 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
 
-                  {/* HEADING */}
-                  <h1
-                    className="
-                      font-serif font-bold text-white
-                      tracking-tight
-                      leading-[0.98]
-                      drop-shadow-md
-                      text-[clamp(2.5rem,7vw,5.5rem)]
-                    "
-                  >
-                    <span className="block font-medium opacity-90">
-                      {slide.titleLine1}
-                    </span>
-
-                    <span className="block">
-                      {slide.titleLine2}
-                    </span>
-                  </h1>
-
-                  {/* SUBTITLE */}
-                  <p className="
-                    font-sans
-                    text-[clamp(0.75rem,1.5vw,1.125rem)]
-                    text-stone-200
-                    font-light
-                    leading-relaxed
-                    max-w-[500px]
-                    drop-shadow-sm
-                  ">
-                    {slide.subtitle}
-                  </p>
-
-                  {/* CTA BUTTONS */}
-                  <div className="
-                    pt-2 sm:pt-3
-                    flex flex-wrap
-                    items-center
-                    gap-2.5 sm:gap-4
-                  ">
-                    <Link
-                      to={slide.buttonLink || "/products"}
+                {/* EDITORIAL CONTENT */}
+                <div
+                  className="
+                    absolute inset-0 z-20
+                    flex flex-col justify-center
+                    px-5 py-8
+                    min-[480px]:px-7
+                    sm:px-10 sm:py-10
+                    md:px-12
+                    lg:px-16
+                    xl:px-20
+                  "
+                >
+                  <div className="w-full max-w-[680px] space-y-2.5 sm:space-y-3.5 lg:space-y-4 pb-6">
+                    {/* TAGLINE */}
+                    <p
                       className="
-                        inline-flex items-center justify-center gap-2
-                        px-4 py-2.5
-                        sm:px-6 sm:py-3
-                        lg:px-8 lg:py-3.5
-                        rounded-full
-                        bg-white text-stone-900
-                        hover:bg-amber-50
-                        text-[10px] sm:text-xs lg:text-sm
-                        font-semibold tracking-wide
-                        shadow-xl
-                        transition-all duration-300
-                        hover:scale-105 active:scale-95
-                        group/btn
-                        whitespace-nowrap
+                        text-[9px]
+                        min-[480px]:text-[10px]
+                        sm:text-xs
+                        tracking-[0.2em]
+                        sm:tracking-[0.25em]
+                        font-medium text-white/80
+                        uppercase
                       "
                     >
-                      <span>{slide.buttonText}</span>
+                      {slide.tagline}
+                    </p>
 
-                      <ChevronRight className="
-                        w-3.5 h-3.5 sm:w-4 sm:h-4
-                        text-stone-700
-                        transition-transform duration-200
-                        group-hover/btn:translate-x-1
-                      " />
-                    </Link>
-
-                    <Link
-                      to="/services"
+                    {/* HEADING */}
+                    <h1
                       className="
-                        inline-flex items-center justify-center
-                        px-4 py-2.5
-                        sm:px-5 sm:py-3
-                        lg:px-6 lg:py-3.5
-                        rounded-full
-                        bg-black/30 backdrop-blur-md
-                        hover:bg-black/50
-                        text-white
-                        text-[10px] sm:text-xs lg:text-sm
-                        font-semibold tracking-wide
-                        border border-white/20
-                        transition-all duration-200
-                        whitespace-nowrap
+                        font-serif font-bold text-white
+                        tracking-tight
+                        leading-[1.02]
+                        drop-shadow-md
+                        text-[clamp(1.85rem,5vw,4.25rem)]
                       "
                     >
-                      Book Installation
-                    </Link>
+                      <span className="block font-medium opacity-90">
+                        {slide.titleLine1}
+                      </span>
+                      <span className="block">{slide.titleLine2}</span>
+                    </h1>
+
+                    {/* SUBTITLE */}
+                    <p
+                      className="
+                        font-sans
+                        text-[clamp(0.75rem,1.3vw,1rem)]
+                        text-stone-200
+                        font-light
+                        leading-relaxed
+                        max-w-[480px]
+                        drop-shadow-sm
+                      "
+                    >
+                      {slide.subtitle}
+                    </p>
+
+                    {/* CTA BUTTONS */}
+                    <div
+                      className="
+                        pt-1.5 sm:pt-2
+                        flex flex-wrap
+                        items-center
+                        gap-2.5 sm:gap-3.5
+                      "
+                    >
+                      <Link
+                        to={slide.buttonLink || "/products"}
+                        tabIndex={isActive ? 0 : -1}
+                        className="
+                          inline-flex items-center justify-center gap-2
+                          px-4 py-2
+                          sm:px-5 sm:py-2.5
+                          lg:px-7 lg:py-3
+                          rounded-full
+                          bg-white text-stone-900
+                          hover:bg-amber-50
+                          text-[10px] sm:text-xs lg:text-sm
+                          font-semibold tracking-wide
+                          shadow-xl
+                          transition-all duration-300
+                          hover:scale-105 active:scale-95
+                          group/btn
+                          whitespace-nowrap
+                        "
+                      >
+                        <span>{slide.buttonText}</span>
+                        <ChevronRight
+                          className="
+                            w-3.5 h-3.5 sm:w-4 sm:h-4
+                            text-stone-700
+                            transition-transform duration-200
+                            group-hover/btn:translate-x-1
+                          "
+                        />
+                      </Link>
+
+                      <Link
+                        to="/services"
+                        tabIndex={isActive ? 0 : -1}
+                        className="
+                          inline-flex items-center justify-center
+                          px-4 py-2
+                          sm:px-5 sm:py-2.5
+                          lg:px-6 lg:py-3
+                          rounded-full
+                          bg-black/30 backdrop-blur-md
+                          hover:bg-black/50
+                          text-white
+                          text-[10px] sm:text-xs lg:text-sm
+                          font-semibold tracking-wide
+                          border border-white/20
+                          transition-all duration-200
+                          whitespace-nowrap
+                        "
+                      >
+                        Book Installation
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
+            );
+          })}
+        </div>
 
-              {/* PAGINATION DOTS */}
-              <div className="
-                absolute z-30
-                bottom-5 sm:bottom-7 lg:bottom-9
-                left-5 sm:left-10 lg:left-16 xl:left-20
-                flex items-center gap-2.5
-              ">
-                {slides.map((_, dotIdx) => (
-                  <button
-                    key={dotIdx}
-                    onClick={() => goToSlide(dotIdx)}
-                    className={`
-                      h-2 sm:h-2.5 rounded-full
-                      transition-all duration-300
-                      ${dotIdx === currentIndex
-                        ? "w-7 sm:w-10 bg-white shadow-md"
-                        : "w-2 sm:w-2.5 bg-white/40 hover:bg-white/70"
-                      }
-                    `}
-                    aria-label={`Go to slide ${dotIdx + 1}`}
-                    aria-current={dotIdx === currentIndex ? "true" : undefined}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* NAVIGATION ARROWS */}
+        {/* FIXED PAGINATION DOTS */}
         {totalSlides > 1 && (
-          <>
-            <button
-              onClick={prevSlide}
-              aria-label="Previous slide"
-              className="
-                absolute left-2 sm:left-5
-                top-1/2 -translate-y-1/2
-                z-40
-                w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12
-                rounded-full
-                bg-white/25 hover:bg-white/90
-                text-white hover:text-stone-900
-                backdrop-blur-md
-                flex items-center justify-center
-                shadow-lg transition-all duration-200
-                opacity-100 md:opacity-0 md:group-hover:opacity-100
-              "
-            >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-            </button>
-
-            <button
-              onClick={nextSlide}
-              aria-label="Next slide"
-              className="
-                absolute right-2 sm:right-5
-                top-1/2 -translate-y-1/2
-                z-40
-                w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12
-                rounded-full
-                bg-white/25 hover:bg-white/90
-                text-white hover:text-stone-900
-                backdrop-blur-md
-                flex items-center justify-center
-                shadow-lg transition-all duration-200
-                opacity-100 md:opacity-0 md:group-hover:opacity-100
-              "
-            >
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-            </button>
-          </>
+          <div
+            className="
+              absolute z-30
+              bottom-4 sm:bottom-5 lg:bottom-6
+              left-5 sm:left-10 lg:left-16 xl:left-20
+              flex items-center gap-2
+            "
+          >
+            {slides.map((_, dotIdx) => (
+              <button
+                key={dotIdx}
+                type="button"
+                onClick={() => goToSlide(dotIdx)}
+                className={`
+                  h-1.5 sm:h-2 rounded-full
+                  transition-all duration-300 cursor-pointer
+                  ${dotIdx === activeDotIndex
+                    ? "w-6 sm:w-9 bg-white shadow-md"
+                    : "w-1.5 sm:w-2 bg-white/40 hover:bg-white/70"
+                  }
+                `}
+                aria-label={`Go to slide ${dotIdx + 1}`}
+                aria-current={dotIdx === activeDotIndex ? "true" : undefined}
+              />
+            ))}
+          </div>
         )}
       </div>
     </section>
